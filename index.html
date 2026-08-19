@@ -260,15 +260,15 @@ function zeichne(){
   const blockOben=y+34, blockUnten=1752, platz=blockUnten-blockOben;
   const n=Math.max(autos.length,1);
   const ctaH=104, ctaAbstand=34, fussH=0;
-  let abstand=n<=6?16:10, rowH=0, listH=0, gesamt=0;
-  for(rowH=angebot?260:240; rowH>=30; rowH--){
+  let abstand=n<=3?26:(n<=6?18:10), rowH=0, listH=0, gesamt=0;
+  for(rowH=angebot?336:312; rowH>=30; rowH--){
     listH=n*rowH+abstand*(n-1);
     gesamt=listH+ctaAbstand+ctaH+fussH;
     if(gesamt<=platz)break;
   }
   let ly=blockOben+Math.max(0,(platz-gesamt)/2);
-  const nameGr=Math.max(30,Math.min(86,Math.round(rowH*0.40)));
-  const preisGr=Math.max(28,Math.min(84,Math.round(rowH*0.39)));
+  const nameGr=Math.max(30,Math.min(98,Math.round(rowH*0.38)));
+  const preisGr=Math.max(28,Math.min(96,Math.round(rowH*0.38)));
   const altGr=Math.max(16,Math.round(preisGr*0.66));
 
   if(!autos.length){
