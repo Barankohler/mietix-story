@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2E2E30">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mietix Story">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Mietix Story</title>
+<style>
+:root{--red:#C4161C;--dark:#2E2E30;--grey:#6F6F72;--line:#E2E2E4;--bg:#F2F2F4;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+     background:var(--bg);color:var(--dark);-webkit-text-size-adjust:100%;padding-bottom:34px;}
+header{background:var(--dark);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 18px 10px;
+       border-bottom:3px solid var(--red);}
+header h1{font-size:15px;letter-spacing:1.2px;font-weight:800;}
+header h1 span{color:var(--red);}
+main{padding:18px 18px 0;}
+.feldname{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--grey);
+          margin:0 0 8px 3px;font-weight:800;}
+.block{margin-bottom:20px;}
+.karte{background:#fff;border-radius:16px;padding:17px;
+  box-shadow:0 1px 2px rgba(0,0,0,.05),0 6px 16px rgba(0,0,0,.045);}
+input[type=date],input[type=text]{width:100%;background:#fff;border:none;border-radius:16px;
+  padding:16px 17px;font-size:18px;font-weight:700;font-family:inherit;color:var(--dark);
+  min-height:56px;box-shadow:0 1px 2px rgba(0,0,0,.05),0 6px 16px rgba(0,0,0,.045);}
+input:focus{outline:2px solid var(--dark);outline-offset:-2px;}
+.feld2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+#zeitraumtext{font-size:12px;color:var(--grey);margin:8px 0 0 3px;font-weight:600;}
+#warn{display:none;font-size:13px;font-weight:700;color:var(--red);margin-top:10px;
+      background:#FDEBEC;padding:11px 13px;border-radius:12px;}
+.zeile{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;cursor:pointer;
+  box-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.04);}
+.zeile:active{transform:scale(.99);}
+.zeile:not(.drin){opacity:.5;}
+.zeile.drin{box-shadow:0 0 0 2px var(--red),0 4px 12px rgba(196,22,28,.16);}
+.zeile .name{display:block;font-size:16px;font-weight:800;}
+.zeile .info{display:block;font-size:12px;color:var(--grey);margin-top:3px;font-weight:600;}
+.marke{font-size:12px;font-weight:800;padding:7px 12px;border-radius:20px;white-space:nowrap;flex:none;}
+.marke.drin{background:var(--red);color:#fff;}
+.marke.raus{background:#EDEDEF;color:var(--grey);}
+#vorschau{width:100%;border-radius:16px;display:block;
+  box-shadow:0 6px 24px rgba(0,0,0,.18);background:#2E2E30;}
+.knopf{display:block;width:100%;margin-top:11px;border:none;border-radius:15px;padding:18px;
+  font-size:17px;font-weight:800;text-align:center;font-family:inherit;cursor:pointer;color:#fff;
+  background:var(--red);box-shadow:0 6px 18px rgba(196,22,28,.3);}
+.knopf:active{transform:scale(.985);}
+.knopf.hell{background:#fff;color:var(--dark);border:1.5px solid var(--line);box-shadow:none;}
+.knopf.aus{background:#C9C9CC;pointer-events:none;box-shadow:none;}
+.klein{font-size:11px;color:var(--grey);margin:9px 0 0 3px;font-weight:600;line-height:1.6;}
+footer{margin:22px 18px 0;font-size:11px;color:var(--grey);line-height:1.7;}
+</style>
+</head>
+<body>
+<header><h1>MIETIX <span>STORY</span></h1></header>
+<main>
+  <div class="block">
+    <p class="feldname">Zeitraum</p>
+    <div class="feld2">
+      <input type="date" id="von" min="2026-01-01" max="2028-12-31">
+      <input type="date" id="bis" min="2026-01-02" max="2028-12-31">
+    </div>
+    <p id="zeitraumtext"></p>
+    <div id="warn"></div>
+  </div>
+
+  <div class="block">
+    <p class="feldname" id="ueberschrift">Fahrzeuge</p>
+    <div id="liste"></div>
+  </div>
+
+  <div class="block">
+    <p class="feldname">Vorschau</p>
+    <canvas id="vorschau" width="1080" height="1920"></canvas>
+    <button class="knopf" id="teilen" type="button">Story teilen</button>
+    <button class="knopf hell" id="speichern" type="button">Bild speichern</button>
+    <p class="klein">Teilen öffnet die Auswahl, dort Instagram und dann Story wählen.
+       Speichern legt das Bild in den Fotos ab.</p>
+  </div>
+
+  <footer>
+    Bildgrösse 1080 x 1920, genau das Story-Format. Alle Inhalte liegen im sichtbaren
+    Bereich, Instagram verdeckt oben und unten je einen Streifen. Preise gelten für den gewählten
+    Zeitraum, inklusive 150 km pro Tag. Stand: 19.08.2026.
+  </footer>
+</main>
+
+<script>
+const D={"weekdays": ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"], "faktor": [1.0, 1.0, 1.0, 1.175, 1.35, 1.35, 1.35], "mind": [1, 1, 1, 1, 2, 2, 2], "days": 30, "rabatt": [0.0, 0.12, 0.17, 0.18, 0.18, 0.18, 0.2, 0.2, 0.2, 0.22, 0.22, 0.22, 0.22, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25], "freiKm": 150, "cars": [{"n": "Audi RS Q8", "gp": 349.0}, {"n": "Audi RS 5 ABT", "gp": 249.0}, {"n": "Audi RS 3 Limousine", "gp": 199.0}, {"n": "Golf 8 GTI Clubsport", "gp": 149.0}, {"n": "Audi RS 6", "gp": 349.0}, {"n": "GLC 63 S AMG", "gp": 269.0}, {"n": "C 63 S AMG", "gp": 289.0}, {"n": "Audi R8", "gp": 399.0}, {"n": "Mercedes E 400 d", "gp": 149.0}, {"n": "Golf 8 2.0 Diesel", "gp": 99.0}]};
+let AUSWAHL=null;
+const $=id=>document.getElementById(id);
+const EUR=new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"});
+const EUR0=new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+
+function ausISO(s){const[j,m,t]=s.split("-").map(Number);return new Date(j,m-1,t);}
+function nachISO(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function wtIndex(d){return (d.getDay()+6)%7;}
+function kurz(d){return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+".";}
+function lang(d){return kurz(d)+d.getFullYear();}
+function wtKurz(d){return ["Mo","Di","Mi","Do","Fr","Sa","So"][wtIndex(d)];}
+function plusTage(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+function tage(v,b){return Math.round((ausISO(b)-ausISO(v))/86400000);}
+
+function scaler(start,dauer){const W=D.faktor.reduce((a,b)=>a+b,0);
+  let s=Math.floor(dauer/7)*W;for(let k=0;k<dauer%7;k++)s+=D.faktor[(start+k)%7];return s;}
+function preis(auto,start,dauer){
+  if(dauer<D.mind[start])return null;
+  return auto.gp*scaler(start,dauer)*(1-D.rabatt[Math.min(dauer,D.days)-1]);
+}
+window.mxPreis=preis;
+
+/* ---------- Story-Bild zeichnen ---------- */
+function rundesRechteck(c,x,y,b,h,r){
+  c.beginPath();c.moveTo(x+r,y);c.arcTo(x+b,y,x+b,y+h,r);c.arcTo(x+b,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+b,y,r);c.closePath();
+}
+function zeichne(){
+  const cv=$("vorschau"), c=cv.getContext("2d");
+  const B=1080,H=1920;
+  const von=ausISO($("von").value), bis=ausISO($("bis").value);
+  const dauer=tage($("von").value,$("bis").value), start=wtIndex(von);
+  const autos=D.cars.filter(a=>AUSWAHL.has(a.n)).map(a=>({n:a.n,p:preis(a,start,dauer)}))
+                    .filter(a=>a.p!==null);
+
+  /* Hintergrund */
+  const g=c.createLinearGradient(0,0,B,H);
+  g.addColorStop(0,"#3A3A3E");g.addColorStop(.55,"#2A2A2C");g.addColorStop(1,"#161617");
+  c.fillStyle=g;c.fillRect(0,0,B,H);
+  /* Roter Schimmer oben */
+  const gl=c.createRadialGradient(B*0.5,-140,60,B*0.5,-140,760);
+  gl.addColorStop(0,"rgba(196,22,28,.55)");gl.addColorStop(1,"rgba(196,22,28,0)");
+  c.fillStyle=gl;c.fillRect(0,0,B,760);
+  c.fillStyle="#C4161C";c.fillRect(0,0,B,10);
+
+  c.textAlign="center";
+
+  /* Marke */
+  c.fillStyle="#FFFFFF";c.font="800 62px -apple-system,Helvetica,Arial,sans-serif";
+  c.letterSpacing="6px";
+  c.fillText("MIETIX",B/2,318);
+  c.letterSpacing="0px";
+  c.fillStyle="rgba(255,255,255,.62)";c.font="600 27px -apple-system,Helvetica,Arial,sans-serif";
+  c.fillText("SPORTWAGENVERMIETUNG WIESBADEN",B/2,366);
+
+  /* Schlagzeile */
+  c.fillStyle="#FFFFFF";c.font="800 104px -apple-system,Helvetica,Arial,sans-serif";
+  c.fillText("JETZT FREI",B/2,506);
+
+  /* Zeitraum als Band */
+  const zt=wtKurz(von)+" "+kurz(von)+"  bis  "+wtKurz(bis)+" "+lang(bis);
+  c.font="800 40px -apple-system,Helvetica,Arial,sans-serif";
+  const bw=c.measureText(zt).width+96;
+  c.fillStyle="#C4161C";rundesRechteck(c,(B-bw)/2,556,bw,86,43);c.fill();
+  c.fillStyle="#FFFFFF";c.fillText(zt,B/2,612);
+  c.fillStyle="rgba(255,255,255,.62)";c.font="600 28px -apple-system,Helvetica,Arial,sans-serif";
+  c.fillText(dauer+(dauer===1?" Tag":" Tage")+" mit "+(D.freiKm*dauer).toLocaleString("de-DE")+" km inklusive",B/2,690);
+
+  /* Fahrzeugliste */
+  const oben=750, unten=1430, platz=unten-oben;
+  const n=Math.max(autos.length,1);
+  const hoehe=Math.min(150,Math.max(84,Math.floor(platz/n)-16));
+  const abstand=14;
+  const gesamt=n*hoehe+(n-1)*abstand;
+  let y=oben+Math.max(0,(platz-gesamt)/2);
+  const nameGr=Math.min(50,Math.max(30,Math.floor(hoehe*0.36)));
+  const preisGr=Math.min(46,Math.max(28,Math.floor(hoehe*0.33)));
+
+  if(!autos.length){
+    c.fillStyle="rgba(255,255,255,.6)";c.font="600 38px -apple-system,Helvetica,Arial,sans-serif";
+    c.fillText("Fahrzeuge antippen",B/2,oben+300);
+  }
+  autos.forEach(a=>{
+    c.fillStyle="rgba(255,255,255,.07)";rundesRechteck(c,80,y,B-160,hoehe,26);c.fill();
+    c.fillStyle="rgba(255,255,255,.14)";c.fillRect(80,y,7,hoehe);
+    c.textAlign="left";c.fillStyle="#FFFFFF";
+    c.font="800 "+nameGr+"px -apple-system,Helvetica,Arial,sans-serif";
+    c.fillText(a.n,124,y+hoehe/2+nameGr*0.36);
+    c.textAlign="right";c.fillStyle="#FF6B6B";
+    c.font="800 "+preisGr+"px -apple-system,Helvetica,Arial,sans-serif";
+    c.fillText(EUR0.format(a.p/dauer)+" / Tag",B-124,y+hoehe/2+preisGr*0.36);
+    y+=hoehe+abstand;
+  });
+
+  /* Fussbereich */
+  c.textAlign="center";
+  c.fillStyle="#C4161C";rundesRechteck(c,B/2-320,1482,640,96,48);c.fill();
+  c.fillStyle="#FFFFFF";c.font="800 42px -apple-system,Helvetica,Arial,sans-serif";
+  c.fillText("JETZT SICHERN",B/2,1544);
+  c.fillStyle="rgba(255,255,255,.6)";c.font="600 30px -apple-system,Helvetica,Arial,sans-serif";
+  c.fillText("Schreib uns eine Nachricht",B/2,1626);
+}
+
+/* ---------- Bedienung ---------- */
+function auffrischen(){
+  const von=$("von").value,bis=$("bis").value;
+  if(tage(von,bis)<1){$("bis").value=nachISO(plusTage(ausISO(von),1));}
+  $("bis").min=nachISO(plusTage(ausISO($("von").value),1));
+  const v=ausISO($("von").value),b=ausISO($("bis").value),d=tage($("von").value,$("bis").value);
+  const start=wtIndex(v);
+  $("zeitraumtext").textContent=D.weekdays[start]+", "+lang(v)+" bis "+D.weekdays[wtIndex(b)]
+    +", "+lang(b)+"   ("+d+(d===1?" Tag":" Tage")+")";
+
+  const zuKurz=d<D.mind[start];
+  $("warn").style.display=zuKurz?"block":"none";
+  if(zuKurz)$("warn").textContent="Start "+D.weekdays[start]+": mindestens "+D.mind[start]
+    +" Tage, sonst gibt es keine Preise für die Story.";
+
+  if(AUSWAHL===null)AUSWAHL=new Set(D.cars.map(a=>a.n));
+  $("liste").innerHTML=D.cars.map(a=>{
+    const p=preis(a,start,d), drin=AUSWAHL.has(a.n);
+    return '<div class="zeile'+(drin?" drin":"")+'" data-auto="'+a.n+'">'
+      +'<span><span class="name">'+a.n+'</span><span class="info">'
+      +(p===null?"kein Preis für diesen Zeitraum":EUR.format(p)+" gesamt, "+EUR0.format(p/d)+" pro Tag")
+      +'</span></span><span class="marke '+(drin?"drin":"raus")+'">'
+      +(drin?"in der Story":"aus")+'</span></div>';
+  }).join("");
+  [...document.querySelectorAll(".zeile")].forEach(z=>{
+    z.onclick=()=>{const n=z.dataset.auto;
+      if(AUSWAHL.has(n))AUSWAHL.delete(n);else AUSWAHL.add(n);auffrischen();};
+  });
+  $("ueberschrift").textContent=AUSWAHL.size+" von "+D.cars.length+" in der Story (antippen zum Ändern)";
+  const nutzbar=!zuKurz&&AUSWAHL.size>0;
+  $("teilen").classList.toggle("aus",!nutzbar);
+  $("speichern").classList.toggle("aus",!nutzbar);
+  zeichne();
+}
+
+function bildDatei(){
+  return new Promise(fertig=>$("vorschau").toBlob(b=>
+    fertig(new File([b],"mietix-story.png",{type:"image/png"})),"image/png"));
+}
+function rueckmeldung(k,t){const a=k.textContent;k.textContent=t;setTimeout(()=>{k.textContent=a;},1800);}
+
+$("teilen").onclick=async()=>{
+  const datei=await bildDatei();
+  if(navigator.canShare&&navigator.canShare({files:[datei]})){
+    try{await navigator.share({files:[datei]});}catch(e){}
+    return;
+  }
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(datei);a.download="mietix-story.png";a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  rueckmeldung($("teilen"),"Bild gespeichert");
+};
+$("speichern").onclick=async()=>{
+  const datei=await bildDatei();
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(datei);a.download="mietix-story.png";a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  rueckmeldung($("speichern"),"Gespeichert");
+};
+
+const heute=new Date(), minD=ausISO("2026-01-01"), maxD=ausISO("2028-12-31");
+const startTag=(heute<minD||heute>maxD)?minD:new Date(heute.getFullYear(),heute.getMonth(),heute.getDate());
+$("von").value=nachISO(startTag);
+$("bis").value=nachISO(plusTage(startTag,3));
+["change","input"].forEach(ev=>{
+  $("von").addEventListener(ev,auffrischen);
+  $("bis").addEventListener(ev,auffrischen);
+});
+auffrischen();
+</script>
+</body>
+</html>
