@@ -92,6 +92,17 @@ footer{margin:22px 18px 0;font-size:11px;color:var(--grey);line-height:1.7;}
   </div>
 
   <div class="block">
+    <p class="feldname">Gratis-Kilometer obendrauf</p>
+    <div class="karte">
+      <div class="chips" id="kmquoten"></div>
+      <div class="betragzeile">
+        <input id="gratiskm" type="number" inputmode="numeric" min="0" max="2000" step="50" value="0">
+        <span>km geschenkt, 0 = ausblenden</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
     <p class="feldname">Zeitraum</p>
     <div class="feld2">
       <input type="date" id="von" min="2026-01-01" max="2028-12-31">
@@ -163,12 +174,18 @@ function zeichne(){
   const rab=Math.max(0,Math.min(70,+$("rabatt").value||0));
   const von=ausISO($("von").value), bis=ausISO($("bis").value);
   const dauer=tage($("von").value,$("bis").value), start=wtIndex(von);
+  const gratisKm=Math.max(0,Math.min(2000,+$("gratiskm").value||0));
   const autos=D.cars.filter(a=>AUSWAHL.has(a.n)).map(a=>{
     const p=preis(a,start,dauer);
     if(p===null)return null;
-    const tag=p/dauer;
-    return {n:a.n, alt:tag, neu:angebot?tag*(1-rab/100):tag};
+    const tag=p/dauer;                 // enthaelt bereits den Mengenrabatt
+    const liste=a.gp*scaler(start,dauer)/dauer;   // gleicher Zeitraum OHNE Mengenrabatt
+    return {n:a.n, liste:Math.max(liste,tag), alt:tag,
+            neu:angebot?tag*(1-rab/100):tag};
   }).filter(Boolean);
+  /* Gesamtrabatt = Mengenrabatt aus der Staffel PLUS Barans Extrarabatt */
+  const gesamtProzent=autos.length
+    ? Math.round((1-autos.reduce((s2,a)=>s2+a.neu/a.liste,0)/autos.length)*100) : 0;
 
   /* --- Hintergrund --- */
   const g=c.createLinearGradient(0,0,B*0.6,H);
@@ -199,14 +216,14 @@ function zeichne(){
     const grad=c.createLinearGradient(B/2-320,0,B/2+320,0);
     grad.addColorStop(0,"#FFFFFF");grad.addColorStop(.5,"#FFD9DA");grad.addColorStop(1,"#FFFFFF");
     c.fillStyle=grad;c.fillText("ANGEBOT",B/2,y+34);
-    if(rab>0){
+    if(rab>0||gesamtProzent>0){
       schrift(c,46);
-      const bt="-"+rab+" %";
+      const bt="HEUTE -"+Math.max(gesamtProzent,rab)+" %";
       const bw=c.measureText(bt).width+70;
       c.fillStyle="#FFFFFF";rundesRechteck(c,(B-bw)/2,y+68,bw,84,42);c.fill();
       c.fillStyle="#C4161C";c.fillText(bt,B/2,y+128);
       const maxSpar=autos.length
-        ? Math.max(...autos.map(a=>(a.alt-a.neu)*dauer)) : 0;
+        ? Math.max(...autos.map(a=>(a.liste-a.neu)*dauer)) : 0;
       if(maxSpar>=1){
         schrift(c,52);c.fillStyle="#FFFFFF";
         c.fillText("BIS ZU "+EUR0.format(maxSpar)+" SPAREN",B/2,y+214);
@@ -228,6 +245,17 @@ function zeichne(){
   if(angebot){c.strokeStyle="rgba(255,255,255,.35)";c.lineWidth=2;c.stroke();}
   c.fillStyle="#FFFFFF";c.fillText(zt,B/2,y+54);
   y+=82;
+
+  if(gratisKm>0){
+    schrift(c,52);
+    const gt="+"+gratisKm.toLocaleString("de-DE")+" km GRATIS";
+    const gw=c.measureText(gt).width+96;
+    c.fillStyle="#FFFFFF";rundesRechteck(c,(B-gw)/2,y+26,gw,96,48);c.fill();
+    c.fillStyle="#C4161C";c.fillText(gt,B/2,y+92);
+    c.fillStyle="rgba(255,255,255,.62)";schrift(c,27,700);c.letterSpacing="2px";
+    c.fillText("ZUSÄTZLICH ZU DEN INKLUSIVKILOMETERN",B/2,y+152);c.letterSpacing="0px";
+    y+=170;
+  }
 
   /* --- Fahrzeugliste, Layout kann nicht ueberlaufen --- */
   const blockOben=y+52, blockUnten=1660, platz=blockUnten-blockOben;
@@ -265,7 +293,7 @@ function zeichne(){
       const nGr=zweiZeilig?preisGr:Math.round(preisGr*0.94);
       const aGr=Math.max(19,Math.round(nGr*(zweiZeilig?0.62:0.66)));
       const neuTxt=EUR0.format(a.neu)+" / Tag";
-      const altTxt="statt "+EUR0.format(a.alt);
+      const altTxt="statt "+EUR0.format(a.liste);
       if(zweiZeilig){
         schrift(c,nGr);c.fillStyle="#FFFFFF";
         c.fillText(neuTxt,rechts,mitte-2);
@@ -338,6 +366,8 @@ function auffrischen(){
   });
   const rab=Math.max(0,Math.min(70,+$("rabatt").value||0));
   [...document.querySelectorAll("#rquoten .chip")].forEach(x=>x.classList.toggle("on",+x.dataset.q===rab));
+  const gkm=+$("gratiskm").value||0;
+  [...document.querySelectorAll("#kmquoten .chip")].forEach(x=>x.classList.toggle("on",+x.dataset.km===gkm));
   $("ueberschrift").textContent=AUSWAHL.size+" von "+D.cars.length+" in der Story (antippen zum Ändern)";
   $("tipp").style.display=AUSWAHL.size>6?"block":"none";
   const nutzbar=!zuKurz&&AUSWAHL.size>0;
@@ -370,6 +400,14 @@ $("speichern").onclick=async()=>{
   setTimeout(()=>URL.revokeObjectURL(a.href),4000);
   rueckmeldung($("speichern"),"Gespeichert");
 };
+
+[50,100,150,300].forEach(q=>{
+  const b=document.createElement("div");
+  b.className="chip";b.textContent="+"+q;b.dataset.km=q;
+  b.onclick=()=>{$("gratiskm").value=($("gratiskm").value==String(q))?0:q;auffrischen();};
+  $("kmquoten").appendChild(b);
+});
+["input","change"].forEach(ev=>$("gratiskm").addEventListener(ev,auffrischen));
 
 [10,15,20,30].forEach(q=>{
   const b=document.createElement("div");
