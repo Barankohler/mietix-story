@@ -154,7 +154,10 @@ function tage(v,b){return Math.round((ausISO(b)-ausISO(v))/86400000);}
 function scaler(start,dauer){const W=D.faktor.reduce((a,b)=>a+b,0);
   let s=Math.floor(dauer/7)*W;for(let k=0;k<dauer%7;k++)s+=D.faktor[(start+k)%7];return s;}
 function preis(auto,start,dauer){
-  if(dauer<D.mind[start])return null;
+  /* Keine Mindestmietdauer-Sperre: in der Story sollen auch kurze Zeitraeume
+     wie Freitag auf Samstag einen Preis zeigen. Gerechnet wird exakt wie im
+     Preisrechner. */
+  if(dauer<1)return null;
   return auto.gp*scaler(start,dauer)*(1-D.rabatt[Math.min(dauer,D.days)-1]);
 }
 window.mxPreis=preis;
@@ -343,10 +346,7 @@ function auffrischen(){
   $("zeitraumtext").textContent=D.weekdays[start]+", "+lang(v)+" bis "+D.weekdays[wtIndex(b)]
     +", "+lang(b)+"   ("+d+(d===1?" Tag":" Tage")+")";
 
-  const zuKurz=d<D.mind[start];
-  $("warn").style.display=zuKurz?"block":"none";
-  if(zuKurz)$("warn").textContent="Start "+D.weekdays[start]+": mindestens "+D.mind[start]
-    +" Tage, sonst gibt es keine Preise für die Story.";
+  $("warn").style.display="none";
 
   if(AUSWAHL===null)AUSWAHL=new Set(D.cars.map(a=>a.n));
   $("liste").innerHTML=D.cars.map(a=>{
@@ -370,7 +370,7 @@ function auffrischen(){
   [...document.querySelectorAll("#kmquoten .chip")].forEach(x=>x.classList.toggle("on",+x.dataset.km===gkm));
   $("ueberschrift").textContent=AUSWAHL.size+" von "+D.cars.length+" in der Story (antippen zum Ändern)";
   $("tipp").style.display=AUSWAHL.size>6?"block":"none";
-  const nutzbar=!zuKurz&&AUSWAHL.size>0;
+  const nutzbar=AUSWAHL.size>0;
   $("teilen").classList.toggle("aus",!nutzbar);
   $("speichern").classList.toggle("aus",!nutzbar);
   zeichne();
