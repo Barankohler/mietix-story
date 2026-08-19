@@ -181,14 +181,14 @@ function zeichne(){
   const autos=D.cars.filter(a=>AUSWAHL.has(a.n)).map(a=>{
     const p=preis(a,start,dauer);
     if(p===null)return null;
-    const tag=p/dauer;                 // enthaelt bereits den Mengenrabatt
-    const liste=a.gp*scaler(start,dauer)/dauer;   // gleicher Zeitraum OHNE Mengenrabatt
-    return {n:a.n, liste:Math.max(liste,tag), alt:tag,
-            neu:angebot?tag*(1-rab/100):tag};
+    /* Story zeigt Barans Listenpreis pro Tag (z.B. 349), darauf nur der Extrarabatt.
+       Keine Wochentagsaufschlaege, kein Mengenrabatt, damit die Zahl immer stimmt. */
+    const liste=a.gp;
+    return {n:a.n, liste:liste, alt:liste,
+            neu:angebot?liste*(1-rab/100):liste};
   }).filter(Boolean);
   /* Gesamtrabatt = Mengenrabatt aus der Staffel PLUS Barans Extrarabatt */
-  const gesamtProzent=autos.length
-    ? Math.round((1-autos.reduce((s2,a)=>s2+a.neu/a.liste,0)/autos.length)*100) : 0;
+  const gesamtProzent=rab;
 
   /* --- Hintergrund --- */
   const g=c.createLinearGradient(0,0,B*0.6,H);
@@ -221,7 +221,7 @@ function zeichne(){
     c.fillStyle=grad;c.fillText("ANGEBOT",B/2,y+34);
     if(rab>0||gesamtProzent>0){
       schrift(c,46);
-      const bt="HEUTE -"+Math.max(gesamtProzent,rab)+" %";
+      const bt="HEUTE -"+rab+" %";
       const bw=c.measureText(bt).width+70;
       c.fillStyle="#FFFFFF";rundesRechteck(c,(B-bw)/2,y+68,bw,84,42);c.fill();
       c.fillStyle="#C4161C";c.fillText(bt,B/2,y+128);
@@ -345,10 +345,9 @@ function auffrischen(){
     const p=preis(a,start,d), drin=AUSWAHL.has(a.n);
     return '<div class="zeile'+(drin?" drin":"")+'" data-auto="'+a.n+'">'
       +'<span><span class="name">'+a.n+'</span><span class="info">'
-      +(p===null?"kein Preis für diesen Zeitraum"
-        :(MODUS==="angebot"
-          ? EUR0.format(p/d*(1-(+$("rabatt").value||0)/100))+" statt "+EUR0.format(p/d)+" pro Tag"
-          : EUR0.format(p/d)+" pro Tag"))
+      +(MODUS==="angebot"
+          ? EUR0.format(a.gp*(1-(+$("rabatt").value||0)/100))+" statt "+EUR0.format(a.gp)+" pro Tag"
+          : EUR0.format(a.gp)+" pro Tag")
       +'</span></span><span class="marke '+(drin?"drin":"raus")+'">'
       +(drin?"in der Story":"aus")+'</span></div>';
   }).join("");
