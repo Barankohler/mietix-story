@@ -209,12 +209,14 @@ function zeichne(){
   c.textAlign="center";
 
   /* --- Schlagzeile --- */
-  let y=326;
+  let y=286;
   if(angebot){
-    schrift(c,132);
-    const grad=c.createLinearGradient(B/2-320,0,B/2+320,0);
-    grad.addColorStop(0,"#FFFFFF");grad.addColorStop(.5,"#FFD9DA");grad.addColorStop(1,"#FFFFFF");
-    c.fillStyle=grad;c.fillText("ANGEBOT",B/2,y+38);
+    schrift(c,138);c.letterSpacing="10px";
+    c.fillStyle="#FFFFFF";
+    c.shadowColor="rgba(0,0,0,.35)";c.shadowBlur=26;c.shadowOffsetY=6;
+    c.fillText("ANGEBOT",B/2,y+42);
+    c.shadowColor="transparent";c.shadowBlur=0;c.shadowOffsetY=0;
+    c.letterSpacing="0px";
     if(gesamtProzent>0){
       schrift(c,46);
       const bt="HEUTE -"+gesamtProzent+" %";
@@ -224,8 +226,10 @@ function zeichne(){
       y+=162;
     } else { y+=70; }
   } else {
-    c.fillStyle="#FFFFFF";schrift(c,120);
-    c.fillText("JETZT FREI",B/2,y+40);
+    c.fillStyle="#FFFFFF";schrift(c,124);c.letterSpacing="8px";
+    c.shadowColor="rgba(0,0,0,.35)";c.shadowBlur=26;c.shadowOffsetY=6;
+    c.fillText("JETZT FREI",B/2,y+42);
+    c.shadowColor="transparent";c.shadowBlur=0;c.shadowOffsetY=0;c.letterSpacing="0px";
     y+=76;
   }
 
