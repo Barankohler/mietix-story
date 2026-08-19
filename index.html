@@ -206,19 +206,41 @@ function zeichne(){
 
   c.textAlign="center";
 
-  /* --- Kopf --- */
-  c.fillStyle="#FFFFFF";schrift(c,60);c.letterSpacing="8px";
-  c.fillText("MIETIX",B/2,326);c.letterSpacing="0px";
-  c.fillStyle="rgba(255,255,255,.55)";schrift(c,25,600);c.letterSpacing="3px";
-  c.fillText("SPORTWAGENVERMIETUNG WIESBADEN",B/2,368);c.letterSpacing="0px";
+  /* --- Logo, nachgezeichnet --- */
+  (function(){
+    const wort="Mietix", gr=112;
+    c.save();
+    c.font="italic 900 "+gr+"px -apple-system,Helvetica,Arial,sans-serif";
+    c.textAlign="center";
+    const wb=c.measureText(wort).width;
+    c.fillStyle="#FFFFFF";
+    c.fillText(wort,B/2,320);
+    /* roter Schraegstrich am x */
+    c.fillStyle="#EE2A2E";
+    c.beginPath();
+    const xr=B/2+wb/2;
+    c.moveTo(xr-6,244);c.lineTo(xr+52,244);c.lineTo(xr+16,292);c.lineTo(xr-30,292);
+    c.closePath();c.fill();
+    /* roter Balken mit Schraegkanten */
+    const bh=62, by=336, bb=Math.min(B-150,wb+70);
+    c.fillStyle="#EE2A2E";
+    c.beginPath();
+    c.moveTo(B/2-bb/2+16,by);c.lineTo(B/2+bb/2+18,by);
+    c.lineTo(B/2+bb/2,by+bh);c.lineTo(B/2-bb/2-2,by+bh);
+    c.closePath();c.fill();
+    c.fillStyle="#FFFFFF";
+    c.font="italic 900 40px -apple-system,Helvetica,Arial,sans-serif";
+    c.fillText("Sportwagenvermietung",B/2,by+46);
+    c.restore();
+  })();
 
   /* --- Schlagzeile --- */
-  let y=470;
+  let y=486;
   if(angebot){
-    schrift(c,116);
+    schrift(c,124);
     const grad=c.createLinearGradient(B/2-320,0,B/2+320,0);
     grad.addColorStop(0,"#FFFFFF");grad.addColorStop(.5,"#FFD9DA");grad.addColorStop(1,"#FFFFFF");
-    c.fillStyle=grad;c.fillText("ANGEBOT",B/2,y+34);
+    c.fillStyle=grad;c.fillText("ANGEBOT",B/2,y+38);
     if(rab>0||gesamtProzent>0){
       schrift(c,46);
       const bt="HEUTE -"+rab+" %";
@@ -228,8 +250,8 @@ function zeichne(){
       y+=178;
     } else { y+=76; }
   } else {
-    c.fillStyle="#FFFFFF";schrift(c,104);
-    c.fillText("JETZT FREI",B/2,y+34);
+    c.fillStyle="#FFFFFF";schrift(c,112);
+    c.fillText("JETZT FREI",B/2,y+38);
     y+=76;
   }
 
@@ -263,8 +285,8 @@ function zeichne(){
     if(gesamt<=platz)break;
   }
   let ly=blockOben+Math.max(0,(platz-gesamt)/2);
-  const nameGr=Math.max(26,Math.min(60,Math.round(rowH*0.34)));
-  const preisGr=Math.max(24,Math.min(58,Math.round(rowH*0.33)));
+  const nameGr=Math.max(28,Math.min(66,Math.round(rowH*0.36)));
+  const preisGr=Math.max(26,Math.min(64,Math.round(rowH*0.36)));
   const altGr=Math.max(16,Math.round(preisGr*0.66));
 
   if(!autos.length){
@@ -286,7 +308,7 @@ function zeichne(){
     if(angebot&&rab>0){
       const zweiZeilig=rowH>=78;
       const nGr=zweiZeilig?preisGr:Math.round(preisGr*0.94);
-      const aGr=Math.max(22,Math.round(nGr*(zweiZeilig?0.74:0.70)));
+      const aGr=Math.max(24,Math.round(nGr*(zweiZeilig?0.78:0.72)));
       const neuTxt=EUR0.format(a.neu)+" / Tag";
       const altTxt="statt "+EUR0.format(a.liste);
       if(zweiZeilig){
