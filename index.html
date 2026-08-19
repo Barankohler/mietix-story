@@ -185,8 +185,9 @@ function zeichne(){
        aus der Staffel, danach Barans Extrarabatt. Keine Wochentagsaufschlaege. */
     const liste=a.gp;
     const mengen=D.rabatt[Math.min(dauer,D.days)-1];
-    const gesamt=Math.min(0.9,Math.round(mengen*100)/100+rab/100);
-    const endpreis=angebot ? liste*(1-gesamt) : liste;
+    const anteil=angebot ? Math.min(0.9,Math.round(mengen*100)/100+rab/100)
+                         : Math.round(mengen*100)/100;
+    const endpreis=liste*(1-anteil);
     return {n:a.n, liste:liste, alt:liste, neu:endpreis};
   }).filter(Boolean);
   /* Gesamtrabatt = Mengenrabatt aus der Staffel PLUS Barans Extrarabatt */
@@ -235,7 +236,17 @@ function zeichne(){
     c.fillText("JETZT FREI",B/2,y+42);
     c.shadowColor="transparent";c.shadowBlur=0;c.shadowOffsetY=0;c.letterSpacing="0px";
     c.fillStyle="#C4161C";rundesRechteck(c,B/2-92,y+72,184,7,4);c.fill();
-    y+=96;
+    const mp=Math.round(mengenrabatt*100);
+    if(mp>0){
+      schrift(c,46);
+      const bt="-"+mp+" % RABATT";
+      const bw=c.measureText(bt).width+70;
+      c.shadowColor="rgba(0,0,0,.30)";c.shadowBlur=22;c.shadowOffsetY=7;
+      c.fillStyle="#FFFFFF";rundesRechteck(c,(B-bw)/2,y+94,bw,86,43);c.fill();
+      c.shadowColor="transparent";c.shadowBlur=0;c.shadowOffsetY=0;
+      c.fillStyle="#C4161C";c.fillText(bt,B/2,y+154);
+      y+=188;
+    } else { y+=96; }
   }
 
   /* --- Zeitraum --- */
@@ -292,7 +303,7 @@ function zeichne(){
   let nameEinheit=nameGr;
   autos.forEach(a=>{
     let pb=pBreite(a.neu,preisGr);
-    if(angebot&&rab>0&&rowH<62){
+    if(a.neu<a.liste-0.5&&rowH<62){
       schrift(c,Math.max(24,Math.round(preisGr*0.72)));
       pb+=c.measureText("statt "+EUR0.format(a.liste)).width+20;
     }
@@ -312,7 +323,8 @@ function zeichne(){
 
     /* Breite des Preisblocks messen, damit der Name nie hineinlaeuft */
     let preisBreite;
-    if(angebot&&rab>0){
+    const spart=a.neu<a.liste-0.5;
+    if(spart){
       preisBreite=pBreite(a.neu,preisGr);
       if(rowH<78){
         schrift(c,Math.max(24,Math.round(preisGr*0.72)));
@@ -326,7 +338,7 @@ function zeichne(){
 
     const rechts=B-118, mitte=yy+rowH/2;
     c.textAlign="right";
-    if(angebot&&rab>0){
+    if(spart){
       const zweiZeilig=rowH>=62;
       const nGr=zweiZeilig?preisGr:Math.round(preisGr*0.94);
       const aGr=Math.max(24,Math.round(nGr*(zweiZeilig?0.78:0.72)));
@@ -383,10 +395,12 @@ function auffrischen(){
     const p=preis(a,start,d), drin=AUSWAHL.has(a.n);
     return '<div class="zeile'+(drin?" drin":"")+'" data-auto="'+a.n+'">'
       +'<span><span class="name">'+a.n+'</span><span class="info">'
-      +(MODUS==="angebot"
-          ? EUR0.format(a.gp*(1-Math.min(0.9,Math.round(D.rabatt[Math.min(d,D.days)-1]*100)/100+(+$("rabatt").value||0)/100)))
-            +" statt "+EUR0.format(a.gp)+" pro Tag"
-          : EUR0.format(a.gp)+" pro Tag")
+      +(function(){
+          const m=Math.round(D.rabatt[Math.min(d,D.days)-1]*100)/100;
+          const q=MODUS==="angebot"?Math.min(0.9,m+(+$("rabatt").value||0)/100):m;
+          return q>0 ? EUR0.format(a.gp*(1-q))+" statt "+EUR0.format(a.gp)+" pro Tag"
+                     : EUR0.format(a.gp)+" pro Tag";
+        })()
       +'</span></span><span class="marke '+(drin?"drin":"raus")+'">'
       +(drin?"in der Story":"aus")+'</span></div>';
   }).join("");
