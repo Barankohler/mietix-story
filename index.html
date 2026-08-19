@@ -267,6 +267,23 @@ function zeichne(){
     c.fillStyle="rgba(255,255,255,.55)";schrift(c,36,600);
     c.fillText("Fahrzeuge antippen",B/2,ly+120);
   }
+  /* Eine gemeinsame Namensgroesse fuer alle Zeilen, sonst wirken sie ungleich */
+  let nameEinheit=nameGr;
+  autos.forEach(a=>{
+    let pb;
+    schrift(c,preisGr);
+    pb=c.measureText(EUR0.format(a.neu)+" / Tag").width;
+    if(angebot&&rab>0&&rowH<62){
+      schrift(c,Math.max(24,Math.round(preisGr*0.72)));
+      pb+=c.measureText("statt "+EUR0.format(a.liste)).width+20;
+    }
+    const platz2=(B-118)-pb-120-34;
+    let g=nameEinheit;
+    schrift(c,g);
+    while(c.measureText(a.n).width>platz2&&g>20){g--;schrift(c,g);}
+    if(g<nameEinheit)nameEinheit=g;
+  });
+
   autos.forEach((a,i)=>{
     const yy=ly+i*(rowH+abstand);
     c.fillStyle=angebot?"rgba(255,255,255,.10)":"rgba(255,255,255,.07)";
@@ -287,10 +304,8 @@ function zeichne(){
       schrift(c,preisGr);
       preisBreite=c.measureText(EUR0.format(a.neu)+" / Tag").width;
     }
-    const platzName=(B-118)-preisBreite-120-34;
-    let ng=nameGr;
+    const ng=nameEinheit;
     schrift(c,ng);
-    while(c.measureText(a.n).width>platzName&&ng>20){ng--;schrift(c,ng);}
     c.textAlign="left";c.fillStyle="#FFFFFF";
     c.fillText(a.n,120,yy+rowH/2+ng*0.35);
 
