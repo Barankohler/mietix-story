@@ -297,7 +297,7 @@ function zeichne(){
     const rechts=B-118, mitte=yy+rowH/2;
     c.textAlign="right";
     if(angebot&&rab>0){
-      const zweiZeilig=rowH>=78;
+      const zweiZeilig=rowH>=62;
       const nGr=zweiZeilig?preisGr:Math.round(preisGr*0.94);
       const aGr=Math.max(24,Math.round(nGr*(zweiZeilig?0.78:0.72)));
       const neuTxt=EUR0.format(a.neu)+" / Tag";
@@ -306,24 +306,24 @@ function zeichne(){
         schrift(c,nGr);c.fillStyle="#FFFFFF";
         c.fillText(neuTxt,rechts,mitte-2);
         schrift(c,aGr,700);
-        c.fillStyle="rgba(255,255,255,.82)";
-        const ay=mitte+aGr*1.18;
+        c.fillStyle="rgba(255,255,255,.55)";
+        const ay=mitte+aGr*1.24;
         c.fillText(altTxt,rechts,ay);
         const ab=c.measureText(altTxt).width;
         const zb=c.measureText("statt ").width;
-        c.strokeStyle="#FF8A8A";c.lineWidth=Math.max(2,Math.round(aGr*0.07));
-        c.beginPath();c.moveTo(rechts-ab+zb,ay-aGr*0.30);c.lineTo(rechts+2,ay-aGr*0.30);c.stroke();
+        c.strokeStyle="rgba(255,255,255,.55)";c.lineWidth=Math.max(2,Math.round(aGr*0.06));
+        c.beginPath();c.moveTo(rechts-ab+zb-2,ay-aGr*0.31);c.lineTo(rechts+2,ay-aGr*0.31);c.stroke();
       } else {
         schrift(c,nGr);c.fillStyle="#FFFFFF";
         c.fillText(neuTxt,rechts,mitte+nGr*0.35);
         const nb=c.measureText(neuTxt).width;
         schrift(c,aGr,700);
         const ax=rechts-nb-20;
-        c.fillStyle="rgba(255,255,255,.82)";
+        c.fillStyle="rgba(255,255,255,.55)";
         c.fillText(altTxt,ax,mitte+aGr*0.35);
         const ab=c.measureText(altTxt).width, zb=c.measureText("statt ").width;
-        c.strokeStyle="#FF8A8A";c.lineWidth=Math.max(2,Math.round(aGr*0.07));
-        c.beginPath();c.moveTo(ax-ab+zb,mitte);c.lineTo(ax+2,mitte);c.stroke();
+        c.strokeStyle="rgba(255,255,255,.55)";c.lineWidth=Math.max(2,Math.round(aGr*0.06));
+        c.beginPath();c.moveTo(ax-ab+zb-2,mitte);c.lineTo(ax+2,mitte);c.stroke();
       }
     } else {
       schrift(c,preisGr);c.fillStyle="#FF6B6B";
