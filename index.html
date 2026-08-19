@@ -209,7 +209,7 @@ function zeichne(){
   c.textAlign="center";
 
   /* --- Schlagzeile --- */
-  let y=372;
+  let y=326;
   if(angebot){
     schrift(c,124);
     const grad=c.createLinearGradient(B/2-320,0,B/2+320,0);
@@ -221,8 +221,8 @@ function zeichne(){
       const bw=c.measureText(bt).width+70;
       c.fillStyle="#FFFFFF";rundesRechteck(c,(B-bw)/2,y+68,bw,84,42);c.fill();
       c.fillStyle="#C4161C";c.fillText(bt,B/2,y+128);
-      y+=178;
-    } else { y+=76; }
+      y+=162;
+    } else { y+=70; }
   } else {
     c.fillStyle="#FFFFFF";schrift(c,112);
     c.fillText("JETZT FREI",B/2,y+38);
@@ -249,18 +249,18 @@ function zeichne(){
   }
 
   /* --- Fahrzeugliste, Layout kann nicht ueberlaufen --- */
-  const blockOben=y+52, blockUnten=1660, platz=blockUnten-blockOben;
+  const blockOben=y+40, blockUnten=1706, platz=blockUnten-blockOben;
   const n=Math.max(autos.length,1);
-  const ctaH=96, ctaAbstand=54, fussH=52;
+  const ctaH=96, ctaAbstand=40, fussH=44;
   let abstand=n<=6?16:10, rowH=0, listH=0, gesamt=0;
-  for(rowH=angebot?200:180; rowH>=30; rowH--){
+  for(rowH=angebot?230:210; rowH>=30; rowH--){
     listH=n*rowH+abstand*(n-1);
     gesamt=listH+ctaAbstand+ctaH+fussH;
     if(gesamt<=platz)break;
   }
   let ly=blockOben+Math.max(0,(platz-gesamt)/2);
-  const nameGr=Math.max(28,Math.min(66,Math.round(rowH*0.36)));
-  const preisGr=Math.max(26,Math.min(64,Math.round(rowH*0.36)));
+  const nameGr=Math.max(28,Math.min(74,Math.round(rowH*0.34)));
+  const preisGr=Math.max(26,Math.min(72,Math.round(rowH*0.34)));
   const altGr=Math.max(16,Math.round(preisGr*0.66));
 
   if(!autos.length){
