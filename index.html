@@ -194,10 +194,10 @@ function zeichne(){
 
   /* --- Hintergrund --- */
   const g=c.createLinearGradient(0,0,B*0.6,H);
-  g.addColorStop(0,"#3C3C41");g.addColorStop(.45,"#282829");g.addColorStop(1,"#121213");
+  g.addColorStop(0,"#33333A");g.addColorStop(.42,"#232326");g.addColorStop(1,"#0E0E10");
   c.fillStyle=g;c.fillRect(0,0,B,H);
-  const gl=c.createRadialGradient(B*0.5,-120,40,B*0.5,-120,820);
-  gl.addColorStop(0,angebot?"rgba(196,22,28,.80)":"rgba(196,22,28,.50)");
+  const gl=c.createRadialGradient(B*0.5,-60,40,B*0.5,-60,700);
+  gl.addColorStop(0,angebot?"rgba(196,22,28,.52)":"rgba(196,22,28,.34)");
   gl.addColorStop(1,"rgba(196,22,28,0)");
   c.fillStyle=gl;c.fillRect(0,0,B,820);
   const gu=c.createRadialGradient(B*0.5,H+120,40,B*0.5,H+120,620);
@@ -209,7 +209,7 @@ function zeichne(){
   c.textAlign="center";
 
   /* --- Schlagzeile --- */
-  let y=286;
+  let y=242;
   if(angebot){
     schrift(c,138);c.letterSpacing="10px";
     c.fillStyle="#FFFFFF";
@@ -217,31 +217,35 @@ function zeichne(){
     c.fillText("ANGEBOT",B/2,y+42);
     c.shadowColor="transparent";c.shadowBlur=0;c.shadowOffsetY=0;
     c.letterSpacing="0px";
+    c.fillStyle="#C4161C";rundesRechteck(c,B/2-92,y+70,184,7,4);c.fill();
     if(gesamtProzent>0){
       schrift(c,46);
       const bt="HEUTE -"+gesamtProzent+" %";
       const bw=c.measureText(bt).width+70;
-      c.fillStyle="#FFFFFF";rundesRechteck(c,(B-bw)/2,y+68,bw,84,42);c.fill();
-      c.fillStyle="#C4161C";c.fillText(bt,B/2,y+128);
-      y+=162;
-    } else { y+=70; }
+      c.shadowColor="rgba(0,0,0,.30)";c.shadowBlur=22;c.shadowOffsetY=7;
+      c.fillStyle="#FFFFFF";rundesRechteck(c,(B-bw)/2,y+92,bw,86,43);c.fill();
+      c.shadowColor="transparent";c.shadowBlur=0;c.shadowOffsetY=0;
+      c.fillStyle="#C4161C";c.fillText(bt,B/2,y+152);
+      y+=186;
+    } else { y+=96; }
   } else {
     c.fillStyle="#FFFFFF";schrift(c,124);c.letterSpacing="8px";
     c.shadowColor="rgba(0,0,0,.35)";c.shadowBlur=26;c.shadowOffsetY=6;
     c.fillText("JETZT FREI",B/2,y+42);
     c.shadowColor="transparent";c.shadowBlur=0;c.shadowOffsetY=0;c.letterSpacing="0px";
-    y+=76;
+    c.fillStyle="#C4161C";rundesRechteck(c,B/2-92,y+72,184,7,4);c.fill();
+    y+=96;
   }
 
   /* --- Zeitraum --- */
   const zt=wtKurz(von)+" "+kurz(von)+"  bis  "+wtKurz(bis)+" "+lang(bis);
   schrift(c,38);
   const zw=c.measureText(zt).width+92;
-  c.fillStyle=angebot?"rgba(255,255,255,.14)":"#C4161C";
-  rundesRechteck(c,(B-zw)/2,y,zw,82,41);c.fill();
-  if(angebot){c.strokeStyle="rgba(255,255,255,.35)";c.lineWidth=2;c.stroke();}
-  c.fillStyle="#FFFFFF";c.fillText(zt,B/2,y+54);
-  y+=82;
+  c.fillStyle=angebot?"rgba(255,255,255,.07)":"#C4161C";
+  rundesRechteck(c,(B-zw)/2,y,zw,78,39);c.fill();
+  if(angebot){c.strokeStyle="rgba(255,255,255,.30)";c.lineWidth=2;c.stroke();}
+  c.fillStyle="#FFFFFF";c.fillText(zt,B/2,y+52);
+  y+=78;
 
   if(gratisKm>0){
     schrift(c,52);
