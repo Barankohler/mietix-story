@@ -274,8 +274,25 @@ function zeichne(){
     c.fillStyle=angebot?"#C4161C":"rgba(255,255,255,.16)";
     rundesRechteck(c,76,yy,9,rowH,4);c.fill();
 
-    c.textAlign="left";c.fillStyle="#FFFFFF";schrift(c,nameGr);
-    c.fillText(a.n,120,yy+rowH/2+nameGr*0.35);
+    /* Breite des Preisblocks messen, damit der Name nie hineinlaeuft */
+    let preisBreite;
+    if(angebot&&rab>0){
+      schrift(c,preisGr);
+      preisBreite=c.measureText(EUR0.format(a.neu)+" / Tag").width;
+      if(rowH<78){
+        schrift(c,Math.max(24,Math.round(preisGr*0.72)));
+        preisBreite+=c.measureText("statt "+EUR0.format(a.liste)).width+20;
+      }
+    } else {
+      schrift(c,preisGr);
+      preisBreite=c.measureText(EUR0.format(a.neu)+" / Tag").width;
+    }
+    const platzName=(B-118)-preisBreite-120-34;
+    let ng=nameGr;
+    schrift(c,ng);
+    while(c.measureText(a.n).width>platzName&&ng>20){ng--;schrift(c,ng);}
+    c.textAlign="left";c.fillStyle="#FFFFFF";
+    c.fillText(a.n,120,yy+rowH/2+ng*0.35);
 
     const rechts=B-118, mitte=yy+rowH/2;
     c.textAlign="right";
