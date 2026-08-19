@@ -185,12 +185,13 @@ function zeichne(){
        aus der Staffel, danach Barans Extrarabatt. Keine Wochentagsaufschlaege. */
     const liste=a.gp;
     const mengen=D.rabatt[Math.min(dauer,D.days)-1];
-    const endpreis=angebot ? liste*(1-mengen)*(1-rab/100) : liste;
+    const gesamt=Math.min(0.9,Math.round(mengen*100)/100+rab/100);
+    const endpreis=angebot ? liste*(1-gesamt) : liste;
     return {n:a.n, liste:liste, alt:liste, neu:endpreis};
   }).filter(Boolean);
   /* Gesamtrabatt = Mengenrabatt aus der Staffel PLUS Barans Extrarabatt */
   const mengenrabatt=D.rabatt[Math.min(dauer,D.days)-1];
-  const gesamtProzent=Math.round((1-(1-mengenrabatt)*(1-rab/100))*100);
+  const gesamtProzent=Math.round(Math.min(90,Math.round(mengenrabatt*100)+rab));
 
   /* --- Hintergrund --- */
   const g=c.createLinearGradient(0,0,B*0.6,H);
@@ -383,7 +384,7 @@ function auffrischen(){
     return '<div class="zeile'+(drin?" drin":"")+'" data-auto="'+a.n+'">'
       +'<span><span class="name">'+a.n+'</span><span class="info">'
       +(MODUS==="angebot"
-          ? EUR0.format(a.gp*(1-D.rabatt[Math.min(d,D.days)-1])*(1-(+$("rabatt").value||0)/100))
+          ? EUR0.format(a.gp*(1-Math.min(0.9,Math.round(D.rabatt[Math.min(d,D.days)-1]*100)/100+(+$("rabatt").value||0)/100)))
             +" statt "+EUR0.format(a.gp)+" pro Tag"
           : EUR0.format(a.gp)+" pro Tag")
       +'</span></span><span class="marke '+(drin?"drin":"raus")+'">'
