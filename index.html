@@ -200,12 +200,18 @@ function zeichne(){
     grad.addColorStop(0,"#FFFFFF");grad.addColorStop(.5,"#FFD9DA");grad.addColorStop(1,"#FFFFFF");
     c.fillStyle=grad;c.fillText("ANGEBOT",B/2,y+34);
     if(rab>0){
-      schrift(c,44);
+      schrift(c,46);
       const bt="-"+rab+" %";
-      const bw=c.measureText(bt).width+64;
-      c.fillStyle="#FFFFFF";rundesRechteck(c,(B-bw)/2,y+72,bw,80,40);c.fill();
+      const bw=c.measureText(bt).width+70;
+      c.fillStyle="#FFFFFF";rundesRechteck(c,(B-bw)/2,y+68,bw,84,42);c.fill();
       c.fillStyle="#C4161C";c.fillText(bt,B/2,y+128);
-      y+=176;
+      const maxSpar=autos.length
+        ? Math.max(...autos.map(a=>(a.alt-a.neu)*dauer)) : 0;
+      if(maxSpar>=1){
+        schrift(c,52);c.fillStyle="#FFFFFF";
+        c.fillText("BIS ZU "+EUR0.format(maxSpar)+" SPAREN",B/2,y+214);
+        y+=250;
+      } else { y+=178; }
     } else { y+=76; }
   } else {
     c.fillStyle="#FFFFFF";schrift(c,104);
@@ -228,7 +234,7 @@ function zeichne(){
   const n=Math.max(autos.length,1);
   const ctaH=96, ctaAbstand=54, fussH=52;
   let abstand=n<=6?16:10, rowH=0, listH=0, gesamt=0;
-  for(rowH=132; rowH>=30; rowH--){
+  for(rowH=angebot?150:132; rowH>=30; rowH--){
     listH=n*rowH+abstand*(n-1);
     gesamt=listH+ctaAbstand+ctaH+fussH;
     if(gesamt<=platz)break;
@@ -252,21 +258,37 @@ function zeichne(){
     c.textAlign="left";c.fillStyle="#FFFFFF";schrift(c,nameGr);
     c.fillText(a.n,120,yy+rowH/2+nameGr*0.35);
 
-    const rechts=B-120, mitte=yy+rowH/2;
+    const rechts=B-118, mitte=yy+rowH/2;
     c.textAlign="right";
     if(angebot&&rab>0){
-      schrift(c,preisGr);
+      const zweiZeilig=rowH>=86;
+      const nGr=zweiZeilig?preisGr:Math.round(preisGr*0.94);
+      const aGr=Math.max(19,Math.round(nGr*(zweiZeilig?0.62:0.66)));
       const neuTxt=EUR0.format(a.neu)+" / Tag";
-      c.fillStyle="#FF6B6B";c.fillText(neuTxt,rechts,mitte+preisGr*0.35);
-      const neuBr=c.measureText(neuTxt).width;
-      schrift(c,altGr,700);
-      const altTxt=EUR0.format(a.alt);
-      const altX=rechts-neuBr-18;
-      c.fillStyle="rgba(255,255,255,.5)";
-      c.fillText(altTxt,altX,mitte+altGr*0.35);
-      const altBr=c.measureText(altTxt).width;
-      c.strokeStyle="rgba(255,255,255,.55)";c.lineWidth=Math.max(2,altGr*0.09);
-      c.beginPath();c.moveTo(altX-altBr-2,mitte);c.lineTo(altX+2,mitte);c.stroke();
+      const altTxt="statt "+EUR0.format(a.alt);
+      if(zweiZeilig){
+        schrift(c,nGr);c.fillStyle="#FFFFFF";
+        c.fillText(neuTxt,rechts,mitte-2);
+        schrift(c,aGr,700);
+        c.fillStyle="rgba(255,255,255,.62)";
+        const ay=mitte+aGr*1.12;
+        c.fillText(altTxt,rechts,ay);
+        const ab=c.measureText(altTxt).width;
+        const zb=c.measureText("statt ").width;
+        c.strokeStyle="#FF6B6B";c.lineWidth=Math.max(3,aGr*0.13);
+        c.beginPath();c.moveTo(rechts-ab+zb,ay-aGr*0.32);c.lineTo(rechts+2,ay-aGr*0.32);c.stroke();
+      } else {
+        schrift(c,nGr);c.fillStyle="#FFFFFF";
+        c.fillText(neuTxt,rechts,mitte+nGr*0.35);
+        const nb=c.measureText(neuTxt).width;
+        schrift(c,aGr,700);
+        const ax=rechts-nb-20;
+        c.fillStyle="rgba(255,255,255,.62)";
+        c.fillText(altTxt,ax,mitte+aGr*0.35);
+        const ab=c.measureText(altTxt).width, zb=c.measureText("statt ").width;
+        c.strokeStyle="#FF6B6B";c.lineWidth=Math.max(3,aGr*0.13);
+        c.beginPath();c.moveTo(ax-ab+zb,mitte);c.lineTo(ax+2,mitte);c.stroke();
+      }
     } else {
       schrift(c,preisGr);c.fillStyle="#FF6B6B";
       c.fillText(EUR0.format(a.neu)+" / Tag",rechts,mitte+preisGr*0.35);
