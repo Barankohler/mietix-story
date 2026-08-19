@@ -181,14 +181,16 @@ function zeichne(){
   const autos=D.cars.filter(a=>AUSWAHL.has(a.n)).map(a=>{
     const p=preis(a,start,dauer);
     if(p===null)return null;
-    /* Story zeigt Barans Listenpreis pro Tag (z.B. 349), darauf nur der Extrarabatt.
-       Keine Wochentagsaufschlaege, kein Mengenrabatt, damit die Zahl immer stimmt. */
+    /* Listenpreis = Barans Tagespreis (z.B. 349). Darauf zuerst der Mengenrabatt
+       aus der Staffel, danach Barans Extrarabatt. Keine Wochentagsaufschlaege. */
     const liste=a.gp;
-    return {n:a.n, liste:liste, alt:liste,
-            neu:angebot?liste*(1-rab/100):liste};
+    const mengen=D.rabatt[Math.min(dauer,D.days)-1];
+    const endpreis=angebot ? liste*(1-mengen)*(1-rab/100) : liste;
+    return {n:a.n, liste:liste, alt:liste, neu:endpreis};
   }).filter(Boolean);
   /* Gesamtrabatt = Mengenrabatt aus der Staffel PLUS Barans Extrarabatt */
-  const gesamtProzent=rab;
+  const mengenrabatt=D.rabatt[Math.min(dauer,D.days)-1];
+  const gesamtProzent=Math.round((1-(1-mengenrabatt)*(1-rab/100))*100);
 
   /* --- Hintergrund --- */
   const g=c.createLinearGradient(0,0,B*0.6,H);
@@ -206,44 +208,16 @@ function zeichne(){
 
   c.textAlign="center";
 
-  /* --- Logo, nachgezeichnet --- */
-  (function(){
-    const wort="Mietix", gr=112;
-    c.save();
-    c.font="italic 900 "+gr+"px -apple-system,Helvetica,Arial,sans-serif";
-    c.textAlign="center";
-    const wb=c.measureText(wort).width;
-    c.fillStyle="#FFFFFF";
-    c.fillText(wort,B/2,320);
-    /* roter Schraegstrich am x */
-    c.fillStyle="#EE2A2E";
-    c.beginPath();
-    const xr=B/2+wb/2;
-    c.moveTo(xr-6,244);c.lineTo(xr+52,244);c.lineTo(xr+16,292);c.lineTo(xr-30,292);
-    c.closePath();c.fill();
-    /* roter Balken mit Schraegkanten */
-    const bh=62, by=336, bb=Math.min(B-150,wb+70);
-    c.fillStyle="#EE2A2E";
-    c.beginPath();
-    c.moveTo(B/2-bb/2+16,by);c.lineTo(B/2+bb/2+18,by);
-    c.lineTo(B/2+bb/2,by+bh);c.lineTo(B/2-bb/2-2,by+bh);
-    c.closePath();c.fill();
-    c.fillStyle="#FFFFFF";
-    c.font="italic 900 40px -apple-system,Helvetica,Arial,sans-serif";
-    c.fillText("Sportwagenvermietung",B/2,by+46);
-    c.restore();
-  })();
-
   /* --- Schlagzeile --- */
-  let y=486;
+  let y=372;
   if(angebot){
     schrift(c,124);
     const grad=c.createLinearGradient(B/2-320,0,B/2+320,0);
     grad.addColorStop(0,"#FFFFFF");grad.addColorStop(.5,"#FFD9DA");grad.addColorStop(1,"#FFFFFF");
     c.fillStyle=grad;c.fillText("ANGEBOT",B/2,y+38);
-    if(rab>0||gesamtProzent>0){
+    if(gesamtProzent>0){
       schrift(c,46);
-      const bt="HEUTE -"+rab+" %";
+      const bt="HEUTE -"+gesamtProzent+" %";
       const bw=c.measureText(bt).width+70;
       c.fillStyle="#FFFFFF";rundesRechteck(c,(B-bw)/2,y+68,bw,84,42);c.fill();
       c.fillStyle="#C4161C";c.fillText(bt,B/2,y+128);
@@ -368,7 +342,8 @@ function auffrischen(){
     return '<div class="zeile'+(drin?" drin":"")+'" data-auto="'+a.n+'">'
       +'<span><span class="name">'+a.n+'</span><span class="info">'
       +(MODUS==="angebot"
-          ? EUR0.format(a.gp*(1-(+$("rabatt").value||0)/100))+" statt "+EUR0.format(a.gp)+" pro Tag"
+          ? EUR0.format(a.gp*(1-D.rabatt[Math.min(d,D.days)-1])*(1-(+$("rabatt").value||0)/100))
+            +" statt "+EUR0.format(a.gp)+" pro Tag"
           : EUR0.format(a.gp)+" pro Tag")
       +'</span></span><span class="marke '+(drin?"drin":"raus")+'">'
       +(drin?"in der Story":"aus")+'</span></div>';
