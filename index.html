@@ -42,6 +42,21 @@ input:focus{outline:2px solid var(--dark);outline-offset:-2px;}
 .marke{font-size:12px;font-weight:800;padding:7px 12px;border-radius:20px;white-space:nowrap;flex:none;}
 .marke.drin{background:var(--red);color:#fff;}
 .marke.raus{background:#EDEDEF;color:var(--grey);}
+.modus{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.mchip{background:#fff;border-radius:14px;padding:16px 10px;font-size:15px;font-weight:800;
+  text-align:center;cursor:pointer;color:var(--dark);
+  box-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.04);}
+.mchip:active{transform:scale(.97);}
+.mchip.an{background:var(--red);color:#fff;box-shadow:0 5px 16px rgba(196,22,28,.34);}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.chips .chip{border:1px solid var(--line);background:#fff;border-radius:12px;padding:13px 0;
+  font-size:14px;font-weight:800;text-align:center;cursor:pointer;color:var(--dark);min-width:0;}
+.chips .chip.on{background:var(--red);border-color:var(--red);color:#fff;}
+.betragzeile{display:flex;align-items:center;gap:11px;margin-top:11px;}
+.betragzeile input{width:110px;font-size:18px;min-height:52px;padding:0 14px;text-align:center;
+  border:1px solid var(--line);box-shadow:none;border-radius:12px;font-weight:800;
+  font-family:inherit;color:var(--dark);background:#fff;}
+.betragzeile span{font-size:13px;color:var(--grey);font-weight:700;}
 #vorschau{width:100%;border-radius:16px;display:block;
   box-shadow:0 6px 24px rgba(0,0,0,.18);background:#2E2E30;}
 .knopf{display:block;width:100%;margin-top:11px;border:none;border-radius:15px;padding:18px;
@@ -58,6 +73,25 @@ footer{margin:22px 18px 0;font-size:11px;color:var(--grey);line-height:1.7;}
 <header><h1>MIETIX <span>STORY</span></h1></header>
 <main>
   <div class="block">
+    <p class="feldname">Art der Story</p>
+    <div class="modus">
+      <div class="mchip an" data-modus="normal">Normale Story</div>
+      <div class="mchip" data-modus="angebot">Angebot mit Rabatt</div>
+    </div>
+  </div>
+
+  <div class="block" id="rabattblock" style="display:none;">
+    <p class="feldname">Rabatt</p>
+    <div class="karte">
+      <div class="chips" id="rquoten"></div>
+      <div class="betragzeile">
+        <input id="rabatt" type="number" inputmode="numeric" min="1" max="70" step="1" value="20">
+        <span>Prozent auf den Tagespreis</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
     <p class="feldname">Zeitraum</p>
     <div class="feld2">
       <input type="date" id="von" min="2026-01-01" max="2028-12-31">
@@ -70,6 +104,8 @@ footer{margin:22px 18px 0;font-size:11px;color:var(--grey);line-height:1.7;}
   <div class="block">
     <p class="feldname" id="ueberschrift">Fahrzeuge</p>
     <div id="liste"></div>
+    <p class="klein" id="tipp" style="display:none;">Tipp: mit vier bis sechs Fahrzeugen
+      wirkt die Story stärker, die Zeilen bleiben gross und der Blick bleibt hängen.</p>
   </div>
 
   <div class="block">
@@ -90,7 +126,7 @@ footer{margin:22px 18px 0;font-size:11px;color:var(--grey);line-height:1.7;}
 
 <script>
 const D={"weekdays": ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"], "faktor": [1.0, 1.0, 1.0, 1.175, 1.35, 1.35, 1.35], "mind": [1, 1, 1, 1, 2, 2, 2], "days": 30, "rabatt": [0.0, 0.12, 0.17, 0.18, 0.18, 0.18, 0.2, 0.2, 0.2, 0.22, 0.22, 0.22, 0.22, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25], "freiKm": 150, "cars": [{"n": "Audi RS Q8", "gp": 349.0}, {"n": "Audi RS 5 ABT", "gp": 249.0}, {"n": "Audi RS 3 Limousine", "gp": 199.0}, {"n": "Golf 8 GTI Clubsport", "gp": 149.0}, {"n": "Audi RS 6", "gp": 349.0}, {"n": "GLC 63 S AMG", "gp": 269.0}, {"n": "C 63 S AMG", "gp": 289.0}, {"n": "Audi R8", "gp": 399.0}, {"n": "Mercedes E 400 d", "gp": 149.0}, {"n": "Golf 8 2.0 Diesel", "gp": 99.0}]};
-let AUSWAHL=null;
+let AUSWAHL=null, MODUS="normal";
 const $=id=>document.getElementById(id);
 const EUR=new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"});
 const EUR0=new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
@@ -114,83 +150,137 @@ window.mxPreis=preis;
 
 /* ---------- Story-Bild zeichnen ---------- */
 function rundesRechteck(c,x,y,b,h,r){
+  r=Math.min(r,h/2,b/2);
   c.beginPath();c.moveTo(x+r,y);c.arcTo(x+b,y,x+b,y+h,r);c.arcTo(x+b,y+h,x,y+h,r);
   c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+b,y,r);c.closePath();
 }
+function schrift(c,gr,st){c.font=(st||800)+" "+gr+"px -apple-system,Helvetica,Arial,sans-serif";}
+
 function zeichne(){
   const cv=$("vorschau"), c=cv.getContext("2d");
   const B=1080,H=1920;
+  const angebot=MODUS==="angebot";
+  const rab=Math.max(0,Math.min(70,+$("rabatt").value||0));
   const von=ausISO($("von").value), bis=ausISO($("bis").value);
   const dauer=tage($("von").value,$("bis").value), start=wtIndex(von);
-  const autos=D.cars.filter(a=>AUSWAHL.has(a.n)).map(a=>({n:a.n,p:preis(a,start,dauer)}))
-                    .filter(a=>a.p!==null);
+  const autos=D.cars.filter(a=>AUSWAHL.has(a.n)).map(a=>{
+    const p=preis(a,start,dauer);
+    if(p===null)return null;
+    const tag=p/dauer;
+    return {n:a.n, alt:tag, neu:angebot?tag*(1-rab/100):tag};
+  }).filter(Boolean);
 
-  /* Hintergrund */
-  const g=c.createLinearGradient(0,0,B,H);
-  g.addColorStop(0,"#3A3A3E");g.addColorStop(.55,"#2A2A2C");g.addColorStop(1,"#161617");
+  /* --- Hintergrund --- */
+  const g=c.createLinearGradient(0,0,B*0.6,H);
+  g.addColorStop(0,"#3C3C41");g.addColorStop(.45,"#282829");g.addColorStop(1,"#121213");
   c.fillStyle=g;c.fillRect(0,0,B,H);
-  /* Roter Schimmer oben */
-  const gl=c.createRadialGradient(B*0.5,-140,60,B*0.5,-140,760);
-  gl.addColorStop(0,"rgba(196,22,28,.55)");gl.addColorStop(1,"rgba(196,22,28,0)");
-  c.fillStyle=gl;c.fillRect(0,0,B,760);
-  c.fillStyle="#C4161C";c.fillRect(0,0,B,10);
+  const gl=c.createRadialGradient(B*0.5,-120,40,B*0.5,-120,820);
+  gl.addColorStop(0,angebot?"rgba(196,22,28,.80)":"rgba(196,22,28,.50)");
+  gl.addColorStop(1,"rgba(196,22,28,0)");
+  c.fillStyle=gl;c.fillRect(0,0,B,820);
+  const gu=c.createRadialGradient(B*0.5,H+120,40,B*0.5,H+120,620);
+  gu.addColorStop(0,"rgba(196,22,28,.28)");gu.addColorStop(1,"rgba(196,22,28,0)");
+  c.fillStyle=gu;c.fillRect(0,H-620,B,620);
+  c.fillStyle="#C4161C";c.fillRect(0,0,B,12);
+  c.fillStyle="rgba(255,255,255,.06)";c.fillRect(0,H-12,B,12);
 
   c.textAlign="center";
 
-  /* Marke */
-  c.fillStyle="#FFFFFF";c.font="800 62px -apple-system,Helvetica,Arial,sans-serif";
-  c.letterSpacing="6px";
-  c.fillText("MIETIX",B/2,318);
-  c.letterSpacing="0px";
-  c.fillStyle="rgba(255,255,255,.62)";c.font="600 27px -apple-system,Helvetica,Arial,sans-serif";
-  c.fillText("SPORTWAGENVERMIETUNG WIESBADEN",B/2,366);
+  /* --- Kopf --- */
+  c.fillStyle="#FFFFFF";schrift(c,60);c.letterSpacing="8px";
+  c.fillText("MIETIX",B/2,326);c.letterSpacing="0px";
+  c.fillStyle="rgba(255,255,255,.55)";schrift(c,25,600);c.letterSpacing="3px";
+  c.fillText("SPORTWAGENVERMIETUNG WIESBADEN",B/2,368);c.letterSpacing="0px";
 
-  /* Schlagzeile */
-  c.fillStyle="#FFFFFF";c.font="800 104px -apple-system,Helvetica,Arial,sans-serif";
-  c.fillText("JETZT FREI",B/2,506);
+  /* --- Schlagzeile --- */
+  let y=470;
+  if(angebot){
+    schrift(c,116);
+    const grad=c.createLinearGradient(B/2-320,0,B/2+320,0);
+    grad.addColorStop(0,"#FFFFFF");grad.addColorStop(.5,"#FFD9DA");grad.addColorStop(1,"#FFFFFF");
+    c.fillStyle=grad;c.fillText("ANGEBOT",B/2,y+34);
+    if(rab>0){
+      schrift(c,44);
+      const bt="-"+rab+" %";
+      const bw=c.measureText(bt).width+64;
+      c.fillStyle="#FFFFFF";rundesRechteck(c,(B-bw)/2,y+72,bw,80,40);c.fill();
+      c.fillStyle="#C4161C";c.fillText(bt,B/2,y+128);
+      y+=176;
+    } else { y+=76; }
+  } else {
+    c.fillStyle="#FFFFFF";schrift(c,104);
+    c.fillText("JETZT FREI",B/2,y+34);
+    y+=76;
+  }
 
-  /* Zeitraum als Band */
+  /* --- Zeitraum --- */
   const zt=wtKurz(von)+" "+kurz(von)+"  bis  "+wtKurz(bis)+" "+lang(bis);
-  c.font="800 40px -apple-system,Helvetica,Arial,sans-serif";
-  const bw=c.measureText(zt).width+96;
-  c.fillStyle="#C4161C";rundesRechteck(c,(B-bw)/2,556,bw,86,43);c.fill();
-  c.fillStyle="#FFFFFF";c.fillText(zt,B/2,612);
-  c.fillStyle="rgba(255,255,255,.62)";c.font="600 28px -apple-system,Helvetica,Arial,sans-serif";
-  c.fillText(dauer+(dauer===1?" Tag":" Tage")+" mit "+(D.freiKm*dauer).toLocaleString("de-DE")+" km inklusive",B/2,690);
+  schrift(c,38);
+  const zw=c.measureText(zt).width+92;
+  c.fillStyle=angebot?"rgba(255,255,255,.14)":"#C4161C";
+  rundesRechteck(c,(B-zw)/2,y,zw,82,41);c.fill();
+  if(angebot){c.strokeStyle="rgba(255,255,255,.35)";c.lineWidth=2;c.stroke();}
+  c.fillStyle="#FFFFFF";c.fillText(zt,B/2,y+54);
+  y+=82;
 
-  /* Fahrzeugliste */
-  const oben=750, unten=1430, platz=unten-oben;
+  /* --- Fahrzeugliste, Layout kann nicht ueberlaufen --- */
+  const blockOben=y+52, blockUnten=1660, platz=blockUnten-blockOben;
   const n=Math.max(autos.length,1);
-  const hoehe=Math.min(150,Math.max(84,Math.floor(platz/n)-16));
-  const abstand=14;
-  const gesamt=n*hoehe+(n-1)*abstand;
-  let y=oben+Math.max(0,(platz-gesamt)/2);
-  const nameGr=Math.min(50,Math.max(30,Math.floor(hoehe*0.36)));
-  const preisGr=Math.min(46,Math.max(28,Math.floor(hoehe*0.33)));
+  const ctaH=96, ctaAbstand=54, fussH=52;
+  let abstand=n<=6?16:10, rowH=0, listH=0, gesamt=0;
+  for(rowH=132; rowH>=30; rowH--){
+    listH=n*rowH+abstand*(n-1);
+    gesamt=listH+ctaAbstand+ctaH+fussH;
+    if(gesamt<=platz)break;
+  }
+  let ly=blockOben+Math.max(0,(platz-gesamt)/2);
+  const nameGr=Math.max(24,Math.min(46,Math.round(rowH*0.36)));
+  const preisGr=Math.max(22,Math.min(42,Math.round(rowH*0.33)));
+  const altGr=Math.max(16,Math.round(preisGr*0.66));
 
   if(!autos.length){
-    c.fillStyle="rgba(255,255,255,.6)";c.font="600 38px -apple-system,Helvetica,Arial,sans-serif";
-    c.fillText("Fahrzeuge antippen",B/2,oben+300);
+    c.fillStyle="rgba(255,255,255,.55)";schrift(c,36,600);
+    c.fillText("Fahrzeuge antippen",B/2,ly+120);
   }
-  autos.forEach(a=>{
-    c.fillStyle="rgba(255,255,255,.07)";rundesRechteck(c,80,y,B-160,hoehe,26);c.fill();
-    c.fillStyle="rgba(255,255,255,.14)";c.fillRect(80,y,7,hoehe);
-    c.textAlign="left";c.fillStyle="#FFFFFF";
-    c.font="800 "+nameGr+"px -apple-system,Helvetica,Arial,sans-serif";
-    c.fillText(a.n,124,y+hoehe/2+nameGr*0.36);
-    c.textAlign="right";c.fillStyle="#FF6B6B";
-    c.font="800 "+preisGr+"px -apple-system,Helvetica,Arial,sans-serif";
-    c.fillText(EUR0.format(a.p/dauer)+" / Tag",B-124,y+hoehe/2+preisGr*0.36);
-    y+=hoehe+abstand;
+  autos.forEach((a,i)=>{
+    const yy=ly+i*(rowH+abstand);
+    c.fillStyle=angebot?"rgba(255,255,255,.10)":"rgba(255,255,255,.07)";
+    rundesRechteck(c,76,yy,B-152,rowH,Math.min(26,rowH/2.4));c.fill();
+    c.fillStyle=angebot?"#C4161C":"rgba(255,255,255,.16)";
+    rundesRechteck(c,76,yy,9,rowH,4);c.fill();
+
+    c.textAlign="left";c.fillStyle="#FFFFFF";schrift(c,nameGr);
+    c.fillText(a.n,120,yy+rowH/2+nameGr*0.35);
+
+    const rechts=B-120, mitte=yy+rowH/2;
+    c.textAlign="right";
+    if(angebot&&rab>0){
+      schrift(c,preisGr);
+      const neuTxt=EUR0.format(a.neu)+" / Tag";
+      c.fillStyle="#FF6B6B";c.fillText(neuTxt,rechts,mitte+preisGr*0.35);
+      const neuBr=c.measureText(neuTxt).width;
+      schrift(c,altGr,700);
+      const altTxt=EUR0.format(a.alt);
+      const altX=rechts-neuBr-18;
+      c.fillStyle="rgba(255,255,255,.5)";
+      c.fillText(altTxt,altX,mitte+altGr*0.35);
+      const altBr=c.measureText(altTxt).width;
+      c.strokeStyle="rgba(255,255,255,.55)";c.lineWidth=Math.max(2,altGr*0.09);
+      c.beginPath();c.moveTo(altX-altBr-2,mitte);c.lineTo(altX+2,mitte);c.stroke();
+    } else {
+      schrift(c,preisGr);c.fillStyle="#FF6B6B";
+      c.fillText(EUR0.format(a.neu)+" / Tag",rechts,mitte+preisGr*0.35);
+    }
   });
 
-  /* Fussbereich */
+  /* --- Handlungsaufruf --- */
   c.textAlign="center";
-  c.fillStyle="#C4161C";rundesRechteck(c,B/2-320,1482,640,96,48);c.fill();
-  c.fillStyle="#FFFFFF";c.font="800 42px -apple-system,Helvetica,Arial,sans-serif";
-  c.fillText("JETZT SICHERN",B/2,1544);
-  c.fillStyle="rgba(255,255,255,.6)";c.font="600 30px -apple-system,Helvetica,Arial,sans-serif";
-  c.fillText("Schreib uns eine Nachricht",B/2,1626);
+  const cy=ly+listH+ctaAbstand;
+  c.fillStyle="#C4161C";rundesRechteck(c,B/2-330,cy,660,ctaH,48);c.fill();
+  c.fillStyle="#FFFFFF";schrift(c,42);
+  c.fillText(angebot?"NUR SOLANGE FREI":"JETZT SICHERN",B/2,cy+62);
+  c.fillStyle="rgba(255,255,255,.55)";schrift(c,29,600);
+  c.fillText("Schreib uns eine Nachricht",B/2,cy+ctaH+44);
 }
 
 /* ---------- Bedienung ---------- */
@@ -213,7 +303,10 @@ function auffrischen(){
     const p=preis(a,start,d), drin=AUSWAHL.has(a.n);
     return '<div class="zeile'+(drin?" drin":"")+'" data-auto="'+a.n+'">'
       +'<span><span class="name">'+a.n+'</span><span class="info">'
-      +(p===null?"kein Preis für diesen Zeitraum":EUR.format(p)+" gesamt, "+EUR0.format(p/d)+" pro Tag")
+      +(p===null?"kein Preis für diesen Zeitraum"
+        :(MODUS==="angebot"
+          ? EUR0.format(p/d*(1-(+$("rabatt").value||0)/100))+" statt "+EUR0.format(p/d)+" pro Tag"
+          : EUR0.format(p/d)+" pro Tag"))
       +'</span></span><span class="marke '+(drin?"drin":"raus")+'">'
       +(drin?"in der Story":"aus")+'</span></div>';
   }).join("");
@@ -221,7 +314,10 @@ function auffrischen(){
     z.onclick=()=>{const n=z.dataset.auto;
       if(AUSWAHL.has(n))AUSWAHL.delete(n);else AUSWAHL.add(n);auffrischen();};
   });
+  const rab=Math.max(0,Math.min(70,+$("rabatt").value||0));
+  [...document.querySelectorAll("#rquoten .chip")].forEach(x=>x.classList.toggle("on",+x.dataset.q===rab));
   $("ueberschrift").textContent=AUSWAHL.size+" von "+D.cars.length+" in der Story (antippen zum Ändern)";
+  $("tipp").style.display=AUSWAHL.size>6?"block":"none";
   const nutzbar=!zuKurz&&AUSWAHL.size>0;
   $("teilen").classList.toggle("aus",!nutzbar);
   $("speichern").classList.toggle("aus",!nutzbar);
@@ -252,6 +348,22 @@ $("speichern").onclick=async()=>{
   setTimeout(()=>URL.revokeObjectURL(a.href),4000);
   rueckmeldung($("speichern"),"Gespeichert");
 };
+
+[10,15,20,30].forEach(q=>{
+  const b=document.createElement("div");
+  b.className="chip";b.textContent="-"+q+" %";b.dataset.q=q;
+  b.onclick=()=>{$("rabatt").value=q;auffrischen();};
+  $("rquoten").appendChild(b);
+});
+[...document.querySelectorAll(".mchip")].forEach(m=>{
+  m.onclick=()=>{
+    MODUS=m.dataset.modus;
+    [...document.querySelectorAll(".mchip")].forEach(x=>x.classList.toggle("an",x===m));
+    $("rabattblock").style.display=MODUS==="angebot"?"block":"none";
+    auffrischen();
+  };
+});
+["input","change"].forEach(ev=>$("rabatt").addEventListener(ev,auffrischen));
 
 const heute=new Date(), minD=ausISO("2026-01-01"), maxD=ausISO("2028-12-31");
 const startTag=(heute<minD||heute>maxD)?minD:new Date(heute.getFullYear(),heute.getMonth(),heute.getDate());
