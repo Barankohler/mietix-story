@@ -86,7 +86,7 @@ footer{margin:22px 18px 0;font-size:11px;color:var(--grey);line-height:1.7;}
       <div class="chips" id="rquoten"></div>
       <div class="betragzeile">
         <input id="rabatt" type="number" inputmode="numeric" min="1" max="70" step="1" value="20">
-        <span>Prozent auf den Tagespreis</span>
+        <span id="rechnung">Prozent zusätzlich</span>
       </div>
     </div>
   </div>
@@ -131,7 +131,7 @@ footer{margin:22px 18px 0;font-size:11px;color:var(--grey);line-height:1.7;}
   <footer>
     Bildgrösse 1080 x 1920, genau das Story-Format. Alle Inhalte liegen im sichtbaren
     Bereich, Instagram verdeckt oben und unten je einen Streifen. Preise gelten für den gewählten
-    Zeitraum, inklusive 150 km pro Tag. Stand: 19.08.2026.
+    Zeitraum, inklusive 150 km pro Tag. Stand: 21.08.2026.
   </footer>
 </main>
 
@@ -192,6 +192,14 @@ function zeichne(){
   }).filter(Boolean);
   /* Gesamtrabatt = Mengenrabatt aus der Staffel PLUS Barans Extrarabatt */
   const mengenrabatt=D.rabatt[Math.min(dauer,D.days)-1];
+  const mengeProzent=Math.round(mengenrabatt*100);
+  {
+    const el=document.getElementById("rechnung");
+    if(el) el.textContent = dauer>=1
+      ? "Prozent zusätzlich  |  "+mengeProzent+" % Mengenrabatt für "+dauer
+        +(dauer===1?" Tag":" Tage")+"  =  "+Math.round(Math.min(90,mengeProzent+rab))+" % gesamt"
+      : "Prozent zusätzlich";
+  }
   const gesamtProzent=Math.round(Math.min(90,Math.round(mengenrabatt*100)+rab));
 
   /* --- Hintergrund --- */
@@ -222,7 +230,7 @@ function zeichne(){
     c.fillStyle="#C4161C";rundesRechteck(c,B/2-92,y+70,184,7,4);c.fill();
     if(gesamtProzent>0){
       schrift(c,46);
-      const bt="HEUTE -"+gesamtProzent+" %";
+      const bt=rab>0 ? "HEUTE -"+gesamtProzent+" %" : "-"+gesamtProzent+" % RABATT";
       const bw=c.measureText(bt).width+70;
       c.shadowColor="rgba(0,0,0,.30)";c.shadowBlur=22;c.shadowOffsetY=7;
       c.fillStyle="#FFFFFF";rundesRechteck(c,(B-bw)/2,y+92,bw,86,43);c.fill();
