@@ -136,7 +136,7 @@ footer{margin:22px 18px 0;font-size:11px;color:var(--grey);line-height:1.7;}
 </main>
 
 <script>
-const D={"weekdays": ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"], "faktor": [1.0, 1.0, 1.0, 1.175, 1.35, 1.35, 1.35], "mind": [1, 1, 1, 1, 1, 2, 2], "days": 30, "rabatt": [0.0, 0.12, 0.17, 0.18, 0.18, 0.18, 0.2, 0.2, 0.2, 0.22, 0.22, 0.22, 0.22, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25], "freiKm": 150, "cars": [{"n": "Audi RS Q8", "gp": 349.0, "frSa": 450}, {"n": "Audi RS 5 ABT", "gp": 249.0, "frSa": 349}, {"n": "Audi RS 3 Limousine", "gp": 199.0, "frSa": 249}, {"n": "VW Golf 8 GTI Clubsport", "gp": 149.0, "frSa": 199}, {"n": "Audi RS 6", "gp": 349.0, "frSa": 450}, {"n": "Mercedes GLC 63 S AMG", "gp": 269.0, "frSa": 349}, {"n": "Mercedes C 63 S AMG", "gp": 289.0, "frSa": 349}, {"n": "Audi R8 performance", "gp": 399.0, "frSa": 499}, {"n": "Mercedes E 400 d", "gp": 149.0, "frSa": 199}, {"n": "VW Golf 8 2.0 Diesel", "gp": 99.0, "frSa": 129}]};
+const D={"weekdays": ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"], "faktor": [1.0, 1.0, 1.0, 1.175, 1.35, 1.35, 1.35], "mind": [1, 1, 1, 1, 1, 1, 1], "days": 30, "rabatt": [0.0, 0.12, 0.17, 0.18, 0.18, 0.18, 0.2, 0.2, 0.2, 0.22, 0.22, 0.22, 0.22, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25], "freiKm": 150, "cars": [{"n": "Audi RS Q8", "gp": 349.0, "frSa": 450}, {"n": "Audi RS 5 ABT", "gp": 249.0, "frSa": 349}, {"n": "Audi RS 3 Limousine", "gp": 199.0, "frSa": 249}, {"n": "VW Golf 8 GTI Clubsport", "gp": 149.0, "frSa": 199}, {"n": "Audi RS 6", "gp": 349.0, "frSa": 450}, {"n": "Mercedes GLC 63 S AMG", "gp": 269.0, "frSa": 349}, {"n": "Mercedes C 63 S AMG", "gp": 289.0, "frSa": 349}, {"n": "Audi R8 performance", "gp": 399.0, "frSa": 499}, {"n": "Mercedes E 400 d", "gp": 149.0, "frSa": 199}, {"n": "VW Golf 8 2.0 Diesel", "gp": 99.0, "frSa": 129}]};
 let AUSWAHL=null, MODUS="normal";
 const $=id=>document.getElementById(id);
 const EUR=new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"});
@@ -183,7 +183,7 @@ function zeichne(){
     if(p===null)return null;
     /* Listenpreis = Barans Tagespreis (z.B. 349). Darauf zuerst der Mengenrabatt
        aus der Staffel, danach Barans Extrarabatt. Keine Wochentagsaufschlaege. */
-    const liste=(start===4&&dauer===1)?(a.frSa||a.gp*1.35):a.gp;
+    const liste=(dauer===1&&start>=4)?(a.frSa||a.gp*1.35):a.gp;
     const mengen=D.rabatt[Math.min(dauer,D.days)-1];
     const anteil=angebot ? Math.min(0.9,Math.round(mengen*100)/100+rab/100)
                          : Math.round(mengen*100)/100;
