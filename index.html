@@ -131,7 +131,7 @@ footer{margin:22px 18px 0;font-size:11px;color:var(--grey);line-height:1.7;}
   <footer>
     Bildgrösse 1080 x 1920, genau das Story-Format. Alle Inhalte liegen im sichtbaren
     Bereich, Instagram verdeckt oben und unten je einen Streifen. Preise gelten für den gewählten
-    Zeitraum, inklusive 150 km pro Tag. Stand: 03.09.2026.
+    Zeitraum, inklusive 150 km pro Tag. Stand: 04.09.2026.
   </footer>
 </main>
 
@@ -203,7 +203,8 @@ function zeichne(){
     if(p===null)return null;
     /* Listenpreis = Barans Tagespreis (z.B. 349). Darauf zuerst der Mengenrabatt
        aus der Staffel, danach Barans Extrarabatt. Keine Wochentagsaufschlaege. */
-    const liste=(dauer===1&&start>=4)?(a.frSa||a.gp*1.35):a.gp;
+    const grund=(dauer===1&&start>=4)?(a.frSa||a.gp*1.35):a.gp*scaler(start,dauer);
+    const liste=grund/dauer;
     const mengen=D.rabatt[Math.min(dauer,D.days)-1];
     const anteil=angebot ? Math.min(0.9,Math.round(mengen*100)/100+rab/100)
                          : Math.round(mengen*100)/100;
@@ -323,19 +324,16 @@ function zeichne(){
   const TAG="/Tag";
   function pBreite(wert,gr){
     schrift(c,gr); let w=c.measureText(EUR0.format(wert)).width;
-    schrift(c,Math.round(gr*0.42));
-    return w+c.measureText(TAG).width+14+c.measureText("ab").width+10;
+    schrift(c,Math.round(gr*0.42)); return w+c.measureText(TAG).width+14;
   }
   function pZeichnen(wert,rechts,basis,gr,farbe){
     const kl=Math.round(gr*0.42);
-    schrift(c,kl); const sw=c.measureText(TAG).width, aw=c.measureText("ab").width;
+    schrift(c,kl); const sw=c.measureText(TAG).width;
     c.textAlign="left"; c.fillStyle="rgba(244,241,236,.42)";
     c.fillText(TAG,rechts-sw,basis-gr*0.04);
     schrift(c,gr); c.fillStyle=farbe; c.textAlign="right";
     const zw=c.measureText(EUR0.format(wert)).width;
     c.fillText(EUR0.format(wert),rechts-sw-14,basis);
-    schrift(c,kl); c.fillStyle="rgba(244,241,236,.42)"; c.textAlign="right";
-    c.fillText("ab",rechts-sw-14-zw-10,basis-gr*0.04);
   }
   /* Eine gemeinsame Namensgroesse fuer alle Zeilen, sonst wirken sie ungleich */
   let nameEinheit=nameGr;
