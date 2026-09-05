@@ -153,6 +153,20 @@ function tage(v,b){return Math.round((ausISO(b)-ausISO(v))/86400000);}
 
 function scaler(start,dauer){const W=D.faktor.reduce((a,b)=>a+b,0);
   let s=Math.floor(dauer/7)*W;for(let k=0;k<dauer%7;k++)s+=D.faktor[(start+k)%7];return s;}
+
+/* Wochenendpreis ist die Obergrenze: faellt ein Miettag auf Fr, Sa oder So,
+   kostet dieser Tag hoechstens den Wochenendpreis des Fahrzeugs. Die
+   Ein-Tages-Miete am Wochenende behaelt ihren eigenen Sonderpreis. */
+function tagespreis(a,wt){
+  const f=a.gp*D.faktor[wt];
+  return (wt>=4 && a.frSa>0) ? Math.min(f,a.frSa) : f;
+}
+function wochenmiete(a,start,dauer){
+  if(dauer===1 && start>=4) return a.frSa || a.gp*D.faktor[start];
+  let s=0;
+  for(let k=0;k<dauer;k++) s+=tagespreis(a,(start+k)%7);
+  return s;
+}
 function preis(auto,start,dauer){
   /* Keine Mindestmietdauer-Sperre: in der Story sollen auch kurze Zeitraeume
      wie Freitag auf Samstag einen Preis zeigen. Gerechnet wird exakt wie im
@@ -203,7 +217,7 @@ function zeichne(){
     if(p===null)return null;
     /* Listenpreis = Barans Tagespreis (z.B. 349). Darauf zuerst der Mengenrabatt
        aus der Staffel, danach Barans Extrarabatt. Keine Wochentagsaufschlaege. */
-    const grund=(dauer===1&&start>=4)?(a.frSa||a.gp*1.35):a.gp*scaler(start,dauer);
+    const grund=wochenmiete(a,start,dauer);
     const liste=grund/dauer;
     const mengen=D.rabatt[Math.min(dauer,D.days)-1];
     const anteil=angebot ? Math.min(0.9,Math.round(mengen*100)/100+rab/100)
@@ -305,7 +319,7 @@ function zeichne(){
   /* --- Fahrzeugliste, Layout kann nicht ueberlaufen --- */
   const blockOben=y+34, blockUnten=1752, platz=blockUnten-blockOben;
   const n=Math.max(autos.length,1);
-  const ctaH=104, ctaAbstand=34, fussH=0;
+  const ctaH=104, ctaAbstand=34, fussH=(dauer>1?52:0);
   let abstand=n<=3?26:(n<=6?18:10), rowH=0, listH=0, gesamt=0;
   for(rowH=angebot?336:312; rowH>=30; rowH--){
     listH=n*rowH+abstand*(n-1);
@@ -406,7 +420,15 @@ function zeichne(){
 
   /* --- Handlungsaufruf --- */
   c.textAlign="center";
-  const cy=ly+listH+ctaAbstand;
+  if(dauer>1){
+    c.textAlign="center";
+    c.font="500 30px -apple-system,Helvetica,Arial,sans-serif";
+    c.letterSpacing="3px";
+    c.fillStyle="rgba(244,241,236,.42)";
+    c.fillText("PREIS GILT NUR FÜR DEN GESAMTEN ZEITRAUM",B/2+2,ly+listH+38);
+    c.letterSpacing="0px";
+  }
+  const cy=ly+listH+fussH+ctaAbstand;
   c.textAlign="center";
   c.fillStyle="#C4161C";rundesRechteck(c,B/2-320,cy,640,ctaH,ctaH/2);c.fill();
   c.font="700 44px -apple-system,Helvetica,Arial,sans-serif";
