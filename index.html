@@ -312,7 +312,7 @@ function zeichne(){
   /* --- Fahrzeugliste, Layout kann nicht ueberlaufen --- */
   const blockOben=y+34, blockUnten=1752, platz=blockUnten-blockOben;
   const n=Math.max(autos.length,1);
-  const ctaH=104, ctaAbstand=34, fussH=0;
+  const ctaH=104, ctaAbstand=34, fussH=(dauer>1?52:0);
   let abstand=n<=3?26:(n<=6?18:10), rowH=0, listH=0, gesamt=0;
   for(rowH=angebot?336:312; rowH>=30; rowH--){
     listH=n*rowH+abstand*(n-1);
@@ -413,7 +413,15 @@ function zeichne(){
 
   /* --- Handlungsaufruf --- */
   c.textAlign="center";
-  const cy=ly+listH+ctaAbstand;
+  if(dauer>1){
+    c.textAlign="center";
+    c.font="500 30px -apple-system,Helvetica,Arial,sans-serif";
+    c.letterSpacing="3px";
+    c.fillStyle="rgba(244,241,236,.42)";
+    c.fillText("PREIS GILT NUR FÜR DEN GESAMTEN ZEITRAUM",B/2+2,ly+listH+38);
+    c.letterSpacing="0px";
+  }
+  const cy=ly+listH+fussH+ctaAbstand;
   c.textAlign="center";
   c.fillStyle="#C4161C";rundesRechteck(c,B/2-320,cy,640,ctaH,ctaH/2);c.fill();
   c.font="700 44px -apple-system,Helvetica,Arial,sans-serif";
