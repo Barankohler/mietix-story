@@ -18,6 +18,11 @@ header{background:var(--dark);color:#fff;padding:calc(10px + env(safe-area-inset
 header h1{font-size:15px;letter-spacing:1.2px;font-weight:800;}
 header h1 span{color:var(--red);}
 main{padding:18px 18px 0;}
+#vorlagen{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.vchip{background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;font-size:14px;
+  box-shadow:0 1px 2px rgba(0,0,0,.05),0 6px 16px rgba(0,0,0,.045);cursor:pointer}
+.vchip.neu{border:1.5px dashed #C9C9D2;box-shadow:none;color:#6B6B73}
+.vchip .weg{color:#C4161C;margin-left:8px;font-weight:800}
 .feldname{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--grey);
           margin:0 0 8px 3px;font-weight:800;}
 .block{margin-bottom:20px;}
@@ -113,7 +118,9 @@ footer{margin:22px 18px 0;font-size:11px;color:var(--grey);line-height:1.7;}
   </div>
 
   <div class="block">
-    <p class="feldname" id="ueberschrift">Fahrzeuge</p>
+    <p class="feldname">Vorlagen</p>
+  <div id="vorlagen"></div>
+  <p class="feldname" id="ueberschrift">Fahrzeuge</p>
     <div id="liste"></div>
     <p class="klein" id="tipp" style="display:none;">Tipp: mit vier bis sechs Fahrzeugen
       wirkt die Story stärker, die Zeilen bleiben gross und der Blick bleibt hängen.</p>
@@ -131,12 +138,12 @@ footer{margin:22px 18px 0;font-size:11px;color:var(--grey);line-height:1.7;}
   <footer>
     Bildgrösse 1080 x 1920, genau das Story-Format. Alle Inhalte liegen im sichtbaren
     Bereich, Instagram verdeckt oben und unten je einen Streifen. Preise gelten für den gewählten
-    Zeitraum, inklusive 150 km pro Tag. Preisstand: <span id="preisstand">21.08.2026</span>.
+    Zeitraum, inklusive 150 km pro Tag. Stand: 05.09.2026.
   </footer>
 </main>
 
 <script>
-const D={"weekdays": ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"], "faktor": [1.0, 1.0, 1.0, 1.175, 1.35, 1.35, 1.35], "mind": [1, 1, 1, 1, 1, 1, 1], "days": 30, "rabatt": [0.0, 0.12, 0.17, 0.18, 0.18, 0.18, 0.2, 0.2, 0.2, 0.22, 0.22, 0.22, 0.22, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25], "freiKm": 150, "cars": [{"n": "Audi RS Q8", "gp": 349.0, "frSa": 450}, {"n": "Audi RS 5 ABT", "gp": 249.0, "frSa": 349}, {"n": "Audi RS 3 Limousine", "gp": 199.0, "frSa": 249}, {"n": "VW Golf 8 GTI Clubsport", "gp": 149.0, "frSa": 199}, {"n": "Audi RS 6", "gp": 349.0, "frSa": 450}, {"n": "Mercedes GLC 63 S AMG", "gp": 269.0, "frSa": 349}, {"n": "Mercedes C 63 S AMG", "gp": 289.0, "frSa": 349}, {"n": "Audi R8 performance", "gp": 399.0, "frSa": 499}, {"n": "Mercedes E 400 d", "gp": 149.0, "frSa": 199}, {"n": "VW Golf 8 2.0 Diesel", "gp": 99.0, "frSa": 129}], "stand": "2026-08-21"};
+const D={"weekdays": ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"], "faktor": [1.0, 1.0, 1.0, 1.175, 1.35, 1.35, 1.35], "mind": [1, 1, 1, 1, 1, 1, 1], "days": 30, "rabatt": [0.0, 0.12, 0.17, 0.18, 0.18, 0.18, 0.2, 0.2, 0.2, 0.22, 0.22, 0.22, 0.22, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25], "freiKm": 150, "cars": [{"n": "Audi RS Q8", "gp": 349.0, "frSa": 450}, {"n": "Audi RS 5 ABT", "gp": 249.0, "frSa": 349}, {"n": "Audi RS 3 Limousine", "gp": 199.0, "frSa": 249}, {"n": "VW Golf 8 GTI Clubsport", "gp": 149.0, "frSa": 199}, {"n": "Audi RS 6", "gp": 349.0, "frSa": 450}, {"n": "Mercedes GLC 63 S AMG", "gp": 269.0, "frSa": 349}, {"n": "Mercedes C 63 S AMG", "gp": 289.0, "frSa": 349}, {"n": "Audi R8 performance", "gp": 399.0, "frSa": 499}, {"n": "Mercedes E 400 d", "gp": 149.0, "frSa": 199}, {"n": "VW Golf 8 2.0 Diesel", "gp": 99.0, "frSa": 129}]};
 let AUSWAHL=null, MODUS="normal";
 const $=id=>document.getElementById(id);
 const EUR=new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"});
@@ -153,16 +160,6 @@ function tage(v,b){return Math.round((ausISO(b)-ausISO(v))/86400000);}
 
 function scaler(start,dauer){const W=D.faktor.reduce((a,b)=>a+b,0);
   let s=Math.floor(dauer/7)*W;for(let k=0;k<dauer%7;k++)s+=D.faktor[(start+k)%7];return s;}
-
-
-/* Preisregel wie in der Excel: alles laeuft ueber die Wochentagsfaktoren und den
-   Mengenrabatt. Einzige Ausnahme ist die Ein-Tages-Miete am Wochenende, die den
-   festen Sonderpreis des Fahrzeugs kostet (Fr auf Sa, Sa auf So, So auf Mo). */
-function wochenmiete(a,start,dauer){
-  if(dauer===1 && start>=4) return a.frSa || a.gp*D.faktor[start];
-  return a.gp*scaler(start,dauer);
-}
-
 function preis(auto,start,dauer){
   /* Keine Mindestmietdauer-Sperre: in der Story sollen auch kurze Zeitraeume
      wie Freitag auf Samstag einen Preis zeigen. Gerechnet wird exakt wie im
@@ -213,13 +210,13 @@ function zeichne(){
     if(p===null)return null;
     /* Listenpreis = Barans Tagespreis (z.B. 349). Darauf zuerst der Mengenrabatt
        aus der Staffel, danach Barans Extrarabatt. Keine Wochentagsaufschlaege. */
-    const grund=wochenmiete(a,start,dauer);
+    const grund=(dauer===1&&start>=4)?(a.frSa||a.gp*1.35):a.gp*scaler(start,dauer);
     const liste=grund/dauer;
-    const mengen=Math.round(D.rabatt[Math.min(dauer,D.days)-1]*100)/100;
-    const anteil=angebot ? Math.min(0.9,mengen+Math.max(0,rab)/100) : mengen;
+    const mengen=D.rabatt[Math.min(dauer,D.days)-1];
+    const anteil=angebot ? Math.min(0.9,Math.round(mengen*100)/100+rab/100)
+                         : Math.round(mengen*100)/100;
     const endpreis=liste*(1-anteil);
-    return {n:a.n, liste:liste, alt:liste, neu:endpreis,
-            summeListe:grund, summeNeu:endpreis*dauer};
+    return {n:a.n, liste:liste, alt:liste, neu:endpreis};
   }).filter(Boolean);
   /* Gesamtrabatt = Mengenrabatt aus der Staffel PLUS Barans Extrarabatt */
   const mengenrabatt=D.rabatt[Math.min(dauer,D.days)-1];
@@ -231,9 +228,7 @@ function zeichne(){
         +(dauer===1?" Tag":" Tage")+"  =  "+Math.round(Math.min(90,mengeProzent+rab))+" % gesamt"
       : "Prozent zusätzlich";
   }
-  let sListe=0, sNeu=0;
-  autos.forEach(function(a){ sListe+=a.summeListe; sNeu+=a.summeNeu; });
-  const gesamtProzent = sListe>0 ? Math.round((sListe-sNeu)/sListe*100) : 0;
+  const gesamtProzent=Math.round(Math.min(90,Math.round(mengenrabatt*100)+rab));
 
   /* --- Hintergrund: tiefes Graphit, ein warmer Lichtstreif, feines Korn --- */
   const g=c.createLinearGradient(0,0,B*0.35,H);
@@ -282,7 +277,7 @@ function zeichne(){
     c.fillText("JETZT FREI",B/2+11,y+42);
     c.letterSpacing="0px";
     c.fillStyle="rgba(196,22,28,.85)";c.fillRect(B/2-52,y+80,104,3);
-    const mp=gesamtProzent;   // echte Ersparnis, Wochenendtage haben keinen Rabatt
+    const mp=Math.round(mengenrabatt*100);
     if(mp>0){
       c.font="700 50px -apple-system,Helvetica,Arial,sans-serif";
       c.letterSpacing="6px";
@@ -317,7 +312,7 @@ function zeichne(){
   /* --- Fahrzeugliste, Layout kann nicht ueberlaufen --- */
   const blockOben=y+34, blockUnten=1752, platz=blockUnten-blockOben;
   const n=Math.max(autos.length,1);
-  const ctaH=104, ctaAbstand=34, fussH=(dauer>1?52:0);
+  const ctaH=104, ctaAbstand=34, fussH=0;
   let abstand=n<=3?26:(n<=6?18:10), rowH=0, listH=0, gesamt=0;
   for(rowH=angebot?336:312; rowH>=30; rowH--){
     listH=n*rowH+abstand*(n-1);
@@ -418,15 +413,7 @@ function zeichne(){
 
   /* --- Handlungsaufruf --- */
   c.textAlign="center";
-  if(dauer>1){
-    c.textAlign="center";
-    c.font="500 30px -apple-system,Helvetica,Arial,sans-serif";
-    c.letterSpacing="3px";
-    c.fillStyle="rgba(244,241,236,.42)";
-    c.fillText("PREIS GILT NUR FÜR DEN GESAMTEN ZEITRAUM",B/2+2,ly+listH+38);
-    c.letterSpacing="0px";
-  }
-  const cy=ly+listH+fussH+ctaAbstand;
+  const cy=ly+listH+ctaAbstand;
   c.textAlign="center";
   c.fillStyle="#C4161C";rundesRechteck(c,B/2-320,cy,640,ctaH,ctaH/2);c.fill();
   c.font="700 44px -apple-system,Helvetica,Arial,sans-serif";
@@ -539,11 +526,16 @@ $("bis").value=nachISO(plusTage(startTag,3));
 auffrischen();
 
 function __uebernehmen(p){
-  D.stand=p.stand||D.stand; standAnzeigen();
   D.weekdays=p.weekdays; D.faktor=p.faktor; D.mind=p.mind; D.days=p.days;
   D.rabatt=p.rabatt; D.freiKm=p.freiKm;
+  var vorher=D.cars.map(function(c){return c.n;}).join("|");
   D.cars=p.cars.map(function(c){return {n:c.anzeige,gp:c.gp,frSa:c.frSa};});
-  AUSWAHL=null;
+  var nachher=D.cars.map(function(c){return c.n;}).join("|");
+  /* Auswahl nur zuruecksetzen, wenn sich die Fahrzeugliste wirklich geaendert hat,
+     sonst verliert Baran seine gerade getippte Auswahl. */
+  if(vorher!==nachher) AUSWAHL=null;
+  else if(AUSWAHL) AUSWAHL=new Set([...AUSWAHL].filter(function(n){
+    return D.cars.some(function(a){return a.n===n;}); }));
 }
 /* --- Gemeinsame Preisdatei: eine Aenderung wirkt in allen Werkzeugen --- */
 (function(){
@@ -555,13 +547,43 @@ function __uebernehmen(p){
   }catch(e){}
 })();
 
-/* Preisstand kommt aus der gemeinsamen Preisdatei, nie mehr von Hand */
-function standAnzeigen(){
-  const e=document.getElementById("preisstand");
-  if(!e||!D.stand)return;
-  e.textContent=D.stand.split("-").reverse().join(".");
+/* --- Vorlagen: haeufige Fahrzeugkombinationen merken --- */
+function vorlagenLesen(){
+  try{ return JSON.parse(localStorage.getItem("mietixStoryVorlagen")||"[]"); }catch(e){ return []; }
 }
-standAnzeigen();
+function vorlagenSchreiben(v){
+  try{ localStorage.setItem("mietixStoryVorlagen",JSON.stringify(v.slice(0,8))); }catch(e){}
+}
+function vorlagenZeigen(){
+  const el=document.getElementById("vorlagen");
+  if(!el)return;
+  const v=vorlagenLesen();
+  el.innerHTML = v.map((x,i)=>
+      '<div class="vchip" data-i="'+i+'">'+x.name+'<span class="weg" data-weg="'+i+'">&times;</span></div>'
+    ).join("") + '<div class="vchip neu" id="vneu">+ Auswahl merken</div>';
+  el.querySelectorAll(".vchip[data-i]").forEach(c=>{
+    c.onclick=e=>{
+      if(e.target.dataset.weg!==undefined){
+        const v2=vorlagenLesen(); v2.splice(+e.target.dataset.weg,1);
+        vorlagenSchreiben(v2); vorlagenZeigen(); return;
+      }
+      const x=vorlagenLesen()[+c.dataset.i];
+      AUSWAHL=new Set(x.autos.filter(n=>D.cars.some(a=>a.n===n)));
+      auffrischen();
+    };
+  });
+  const nb=document.getElementById("vneu");
+  if(nb) nb.onclick=()=>{
+    const autos=[...(AUSWAHL||new Set())];
+    if(!autos.length){ alert("Erst Fahrzeuge antippen, dann merken."); return; }
+    const name=prompt("Name für diese Auswahl:", autos.length+" Fahrzeuge");
+    if(!name)return;
+    const v=vorlagenLesen();
+    v.unshift({name:name.trim().slice(0,22), autos:autos});
+    vorlagenSchreiben(v); vorlagenZeigen();
+  };
+}
+vorlagenZeigen();
 </script>
 </body>
 </html>
