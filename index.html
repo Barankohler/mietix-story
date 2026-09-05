@@ -154,33 +154,18 @@ function tage(v,b){return Math.round((ausISO(b)-ausISO(v))/86400000);}
 function scaler(start,dauer){const W=D.faktor.reduce((a,b)=>a+b,0);
   let s=Math.floor(dauer/7)*W;for(let k=0;k<dauer%7;k++)s+=D.faktor[(start+k)%7];return s;}
 
-/* Preisregel wie in der Excel:
-   Ein Wochenendtag (Fr, Sa, So) kostet den festen Wochenendpreis des Fahrzeugs.
-   Kein Wochentagsfaktor, kein Mengenrabatt.
-   Werktage laufen ueber den Faktor, der Mengenrabatt gilt nur auf diesen Teil. */
-function teile(a,start,dauer){
-  let we=0, wt=0;
-  for(let k=0;k<dauer;k++){
-    const t=(start+k)%7;
-    if(t>=4) we += (a.frSa || a.gp*D.faktor[t]);
-    else     wt += a.gp*D.faktor[t];
-  }
-  return {we:we, wt:wt, liste:we+wt};
+
+/* Preisregel wie in der Excel: alles laeuft ueber die Wochentagsfaktoren und den
+   Mengenrabatt. Einzige Ausnahme ist die Ein-Tages-Miete am Wochenende, die den
+   festen Sonderpreis des Fahrzeugs kostet (Fr auf Sa, Sa auf So, So auf Mo). */
+function wochenmiete(a,start,dauer){
+  if(dauer===1 && start>=4) return a.frSa || a.gp*D.faktor[start];
+  return a.gp*scaler(start,dauer);
 }
 
 /* Wochenendpreis ist die Obergrenze: faellt ein Miettag auf Fr, Sa oder So,
    kostet dieser Tag hoechstens den Wochenendpreis des Fahrzeugs. Die
    Ein-Tages-Miete am Wochenende behaelt ihren eigenen Sonderpreis. */
-function tagespreis(a,wt){
-  const f=a.gp*D.faktor[wt];
-  return (wt>=4 && a.frSa>0) ? Math.min(f,a.frSa) : f;
-}
-function wochenmiete(a,start,dauer){
-  if(dauer===1 && start>=4) return a.frSa || a.gp*D.faktor[start];
-  let s=0;
-  for(let k=0;k<dauer;k++) s+=tagespreis(a,(start+k)%7);
-  return s;
-}
 function preis(auto,start,dauer){
   /* Keine Mindestmietdauer-Sperre: in der Story sollen auch kurze Zeitraeume
      wie Freitag auf Samstag einen Preis zeigen. Gerechnet wird exakt wie im
@@ -231,13 +216,13 @@ function zeichne(){
     if(p===null)return null;
     /* Listenpreis = Barans Tagespreis (z.B. 349). Darauf zuerst der Mengenrabatt
        aus der Staffel, danach Barans Extrarabatt. Keine Wochentagsaufschlaege. */
-    const tl=teile(a,start,dauer);
+    const grund=wochenmiete(a,start,dauer);
+    const liste=grund/dauer;
     const mengen=Math.round(D.rabatt[Math.min(dauer,D.days)-1]*100)/100;
-    const nachMenge=tl.we+tl.wt*(1-mengen);
-    const extra=angebot ? Math.min(90,Math.max(0,rab))/100 : 0;
-    const endpreis=nachMenge*(1-extra);
-    return {n:a.n, liste:tl.liste/dauer, alt:tl.liste/dauer, neu:endpreis/dauer,
-            summeListe:tl.liste, summeNeu:endpreis};
+    const anteil=angebot ? Math.min(0.9,mengen+Math.max(0,rab)/100) : mengen;
+    const endpreis=liste*(1-anteil);
+    return {n:a.n, liste:liste, alt:liste, neu:endpreis,
+            summeListe:grund, summeNeu:endpreis*dauer};
   }).filter(Boolean);
   /* Gesamtrabatt = Mengenrabatt aus der Staffel PLUS Barans Extrarabatt */
   const mengenrabatt=D.rabatt[Math.min(dauer,D.days)-1];
