@@ -300,7 +300,7 @@ function zeichne(){
     c.fillText("JETZT FREI",B/2+11,y+42);
     c.letterSpacing="0px";
     c.fillStyle="rgba(196,22,28,.85)";c.fillRect(B/2-52,y+80,104,3);
-    const mp=Math.round(mengenrabatt*100);
+    const mp=gesamtProzent;   // echte Ersparnis, Wochenendtage haben keinen Rabatt
     if(mp>0){
       c.font="700 50px -apple-system,Helvetica,Arial,sans-serif";
       c.letterSpacing="6px";
