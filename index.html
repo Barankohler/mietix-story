@@ -139,7 +139,7 @@ footer{margin:22px 18px 0;font-size:11px;color:var(--grey);line-height:1.7;}
     Bildgrösse 1080 x 1920, genau das Story-Format. Alle Inhalte liegen im sichtbaren
     Bereich, Instagram verdeckt oben und unten je einen Streifen. Preise gelten für den gewählten
     Zeitraum, inklusive 150 km pro Tag.
-    Preisstand: <span id="preisstand">05.09.2026</span>.
+    Preisstand: <span id="preisstand">06.09.2026</span>.
   </footer>
 </main>
 
@@ -290,13 +290,26 @@ function zeichne(){
   }
 
   /* --- Zeitraum --- */
-  const zt=(wtKurz(von)+" "+kurz(von)+"   bis   "+wtKurz(bis)+" "+lang(bis)).toUpperCase();
-  c.font="500 36px -apple-system,Helvetica,Arial,sans-serif";
-  c.letterSpacing="5px";
-  c.fillStyle="rgba(244,241,236,.42)";
-  c.fillText(zt,B/2+3,y+50);
+  const zt=(wtKurz(von)+" "+kurz(von)+"  bis  "+wtKurz(bis)+" "+lang(bis)).toUpperCase();
+  c.font="700 48px -apple-system,Helvetica,Arial,sans-serif";
+  c.letterSpacing="3px";
+  const zw=c.measureText(zt).width+88;
+  c.strokeStyle="rgba(244,241,236,.28)";c.lineWidth=2;
+  rundesRechteck(c,(B-zw)/2,y+14,zw,104,52);c.stroke();
+  c.fillStyle="#F4F1EC";
+  c.fillText(zt,B/2+2,y+82);
   c.letterSpacing="0px";
-  y+=78;
+
+  if(dauer>1){
+    c.font="700 31px -apple-system,Helvetica,Arial,sans-serif";
+    c.letterSpacing="3px";
+    c.fillStyle="#C4161C";
+    c.fillText("NUR ZUSAMMEN BUCHBAR, "+dauer+" TAGE AM STÜCK",B/2+2,y+164);
+    c.letterSpacing="0px";
+    y+=196;
+  } else {
+    y+=138;
+  }
 
   if(gratisKm>0){
     c.font="700 46px -apple-system,Helvetica,Arial,sans-serif";
@@ -313,7 +326,7 @@ function zeichne(){
   /* --- Fahrzeugliste, Layout kann nicht ueberlaufen --- */
   const blockOben=y+34, blockUnten=1752, platz=blockUnten-blockOben;
   const n=Math.max(autos.length,1);
-  const ctaH=104, ctaAbstand=34, fussH=(dauer>1?52:0);
+  const ctaH=104, ctaAbstand=34, fussH=0;
   let abstand=n<=3?26:(n<=6?18:10), rowH=0, listH=0, gesamt=0;
   for(rowH=angebot?336:312; rowH>=30; rowH--){
     listH=n*rowH+abstand*(n-1);
@@ -414,14 +427,6 @@ function zeichne(){
 
   /* --- Handlungsaufruf --- */
   c.textAlign="center";
-  if(dauer>1){
-    c.textAlign="center";
-    c.font="500 30px -apple-system,Helvetica,Arial,sans-serif";
-    c.letterSpacing="3px";
-    c.fillStyle="rgba(244,241,236,.42)";
-    c.fillText("PREIS GILT NUR FÜR DEN GESAMTEN ZEITRAUM",B/2+2,ly+listH+38);
-    c.letterSpacing="0px";
-  }
   const cy=ly+listH+fussH+ctaAbstand;
   c.textAlign="center";
   c.fillStyle="#C4161C";rundesRechteck(c,B/2-320,cy,640,ctaH,ctaH/2);c.fill();
