@@ -461,8 +461,10 @@ function auffrischen(){
       +(function(){
           const m=Math.round(D.rabatt[Math.min(d,D.days)-1]*100)/100;
           const q=MODUS==="angebot"?Math.min(0.9,m+(+$("rabatt").value||0)/100):m;
-          return q>0 ? EUR0.format(a.gp*(1-q))+" statt "+EUR0.format(a.gp)+" pro Tag"
-                     : EUR0.format(a.gp)+" pro Tag";
+          // gleicher Tagespreis wie auf dem Bild, auch am Wochenende (30.10.2026)
+          const tag=((d===1&&start>=4)?(a.frSa||a.gp*1.35):a.gp*scaler(start,d))/d;
+          return q>0 ? EUR0.format(tag*(1-q))+" statt "+EUR0.format(tag)+" pro Tag"
+                     : EUR0.format(tag)+" pro Tag";
         })()
       +'</span></span><span class="marke '+(drin?"drin":"raus")+'">'
       +(drin?"in der Story":"aus")+'</span></div>';
