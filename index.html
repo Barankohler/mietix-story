@@ -605,13 +605,77 @@ function vorlagenZeigen(){
 vorlagenZeigen();
 </script>
 <script>
-/* ‹ Start oben links (31.10.2026) */
-(function(){if(document.querySelector(".mxStart"))return;
-  const ziel=document.querySelector("header h1")||document.querySelector(".topbar");if(!ziel)return;
-  const st=document.createElement("style");st.textContent=".mxStart{display:inline-flex;align-items:center;gap:2px;margin-right:10px;padding:5px 11px 5px 8px;border-radius:999px;border:1.5px solid currentColor;color:inherit;text-decoration:none;font:800 13px/1 -apple-system,Inter,system-ui,sans-serif;letter-spacing:0;text-transform:none;vertical-align:middle;opacity:.8;-webkit-tap-highlight-color:transparent}.mxStart b{font-size:17px;line-height:13px;margin-top:-2px}.mxStart:active{opacity:.5}header h1{white-space:nowrap}header .mxStart,.topbar .mxStart{float:none!important;margin:0 10px 0 0!important;padding:5px 11px 5px 8px!important;font-size:13px!important;color:inherit!important}@media(max-width:360px){header .mxStart,.topbar .mxStart{padding:4px 8px 4px 6px!important;margin-right:6px!important;font-size:12px!important}}@media(max-width:480px){.topbar .brand-sub{display:none}}.topbar{overflow:hidden}";
+/* Mietix App-Gefühl (31.10.2026) */
+(function(){if(window.mxApp)return;window.mxApp=1;
+  const pfad=location.pathname,istStart=/mietix-zentrale\/(index\.html)?$/.test(pfad)||/\/zentrale$/.test(pfad);
+  const art=/anfragen/.test(pfad)?"anfragen":/angebot/.test(pfad)?"angebot":/belegung/.test(pfad)?"kalender":/vertrag/.test(pfad)?"vertrag":
+    /kunden/.test(pfad)?"kunden":/autos/.test(pfad)?"autos":/geld/.test(pfad)?"geld":/schaden/.test(pfad)?"schaeden":/nachrichten/.test(pfad)?"nachrichten":
+    /statistik/.test(pfad)?"zahlen":/story/.test(pfad)?"story":/papierkorb/.test(pfad)?"papierkorb":/einstellungen/.test(pfad)?"einstellungen":"";
+  const SYM={
+ "anfragen":'<path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h8M8 11h8M8 15h5"/>',
+ "kalender":'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+ "angebot":'<rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 7h8M8 12h3M13 12h3M8 16h3M13 16h3"/>',
+ "vertrag":'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/>',
+ "kunden":'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+ "autos":'<path d="M3 13l2-5h14l2 5v5H3z"/><circle cx="7.5" cy="16" r="1.5"/><circle cx="16.5" cy="16" r="1.5"/>',
+ "geld":'<rect x="3" y="6" width="18" height="12" rx="3"/><circle cx="12" cy="12" r="2.5"/>',
+ "schaeden":'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h0"/>',
+ "nachrichten":'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+ "zahlen":'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+ "story":'<rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 17l3-4 2 2 3-4"/>',
+ "papierkorb":'<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>',
+ "einstellungen":'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>'
+};
+  const st=document.createElement("style");st.textContent=
+    /* eine Kopfzeile für alle: weiß, roter Strich */
+    (istStart?"":"header{background:#fff!important;color:#1C1C1E!important;border-bottom:3px solid #C4161C!important}header h1{color:#1C1C1E!important;white-space:nowrap}header h1 span{color:#C4161C!important}")+
+    ".topbar{background:#fff!important;color:#1C1C1E!important;border-bottom:3px solid #C4161C!important;overflow:hidden}.topbar .brand{color:#1C1C1E!important}.topbar .brand-sub{color:#8A8A8E!important}"+
+    ".mxStart{display:inline-flex;align-items:center;gap:2px;vertical-align:middle;border-radius:999px;border:1.5px solid currentColor;text-decoration:none;font-weight:800;letter-spacing:0;text-transform:none;opacity:.8;-webkit-tap-highlight-color:transparent;line-height:1}"+
+    "header .mxStart,.topbar .mxStart{float:none!important;margin:0 10px 0 0!important;padding:5px 11px 5px 8px!important;font-size:13px!important;color:inherit!important;font-family:-apple-system,Inter,system-ui,sans-serif!important}"+
+    ".mxStart b{font-size:17px;line-height:13px;margin-top:-2px}.mxStart:active{opacity:.5}"+
+    ".mxSym{display:inline-block;width:19px;height:19px;vertical-align:-4px;margin-right:6px;stroke:#C4161C;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}"+
+    "@media(max-width:360px){header .mxStart,.topbar .mxStart{padding:4px 8px 4px 6px!important;margin-right:6px!important;font-size:12px!important}.mxSym{display:none}}"+
+    "@media(max-width:480px){.topbar .brand-sub{display:none}}"+
+    /* App-Gefühl: nichts markieren, nicht zoomen, kein grauer Tipp-Schatten */
+    "html{-webkit-text-size-adjust:100%;touch-action:manipulation}"+
+    "button,a,.chip,.knopf,.kachel,.mxKnopf,summary,[data-fenster],label,.reiter div,.tag,.minik,.z,.vorgang,.punkt{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}"+
+    "input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text}"+
+    /* sanftes Überblenden zwischen den Seiten */
+    "@view-transition{navigation:auto}::view-transition-old(root),::view-transition-new(root){animation-duration:.18s}"+
+    /* neue Version */
+    "#mxNeu{display:none;background:#1C1C1E;color:#fff;text-align:center;font:700 14px -apple-system,Inter,system-ui,sans-serif;padding:11px 16px;cursor:pointer}#mxNeu.an{display:block}#mxNeu b{color:#FF6B6B}";
   document.head.appendChild(st);
-  const a=document.createElement("a");a.className="mxStart";a.href="https://barankohler.github.io/mietix-zentrale/";a.innerHTML="<b>‹</b>Start";a.setAttribute("aria-label","Zur Startseite");
-  ziel.insertBefore(a,ziel.firstChild)})();
+
+  // ‹ Start und Symbol in der Kopfzeile
+  const ziel=document.querySelector("header h1")||document.querySelector(".topbar");
+  if(ziel&&!istStart&&!document.querySelector(".mxStart")){
+    if(SYM[art]){const s=document.createElementNS("http://www.w3.org/2000/svg","svg");s.setAttribute("viewBox","0 0 24 24");s.setAttribute("class","mxSym");s.innerHTML=SYM[art];ziel.insertBefore(s,ziel.firstChild)}
+    const a=document.createElement("a");a.className="mxStart";a.href="https://barankohler.github.io/mietix-zentrale/";a.innerHTML="<b>‹</b>Start";a.setAttribute("aria-label","Zur Startseite");ziel.insertBefore(a,ziel.firstChild)}
+
+  // Wischen vom linken Rand = zurück (nur als App, im Browser macht das Safari)
+  const alsApp=navigator.standalone||matchMedia("(display-mode: standalone)").matches;
+  if(alsApp){let x0=null,y0=0;
+    document.addEventListener("touchstart",e=>{const t=e.touches[0];x0=(t.clientX<=24&&e.touches.length===1&&!e.target.closest("canvas,.pad,#ug,input,textarea,select"))?t.clientX:null;y0=t.clientY},{passive:true});
+    document.addEventListener("touchend",e=>{if(x0===null)return;const t=e.changedTouches[0],dx=t.clientX-x0,dy=Math.abs(t.clientY-y0);x0=null;if(dx<80||dy>60)return;
+      if(document.querySelector(".mxFenster.auf")&&window.mxZu){mxZu();return}
+      if(typeof window.mxZurueck==="function"&&window.mxZurueck())return;
+      if(istStart)return;
+      if(history.length>1&&document.referrer.indexOf(location.origin)===0)history.back();else location.href="https://barankohler.github.io/mietix-zentrale/"},{passive:true})}
+
+  // Neue Version: die Seite aus dem Netz mit der geladenen vergleichen (ohne Daten, nur der Text der Seite)
+  let alt=null;
+  async function pruefen(){try{const r=await fetch(location.pathname,{cache:"no-store"});if(!r.ok)return;const t=await r.text(),h=t.length+":"+t.slice(-400);
+    if(alt===null){const c=await fetch(location.pathname,{cache:"force-cache"}).then(x=>x.text()).catch(()=>null);alt=c?c.length+":"+c.slice(-400):h}
+    if(h!==alt){let b=document.getElementById("mxNeu");if(!b){b=document.createElement("div");b.id="mxNeu";b.innerHTML="Neue Version da. <b>Tippen zum Aktualisieren</b>";b.onclick=()=>location.reload();
+      const kopf=document.querySelector("header,.topbar");if(kopf)kopf.after(b);else document.body.prepend(b)}b.classList.add("an")}}catch(e){}}
+  setTimeout(pruefen,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pruefen()});
+
+  // Ohne Internet: Seite aus dem Speicher (sw.js liegt im Ordner der Seite)
+  if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+
+  // Startseite: die meistgenutzten Seiten schon vorladen, dann öffnen sie ohne Wartezeit
+  if(istStart)setTimeout(()=>["mietix-vertrag/","mietix-anfragen/","mietix-belegung/","mietix-autos/"].forEach(p=>{const l=document.createElement("link");l.rel="prefetch";l.href="https://barankohler.github.io/"+p;document.head.appendChild(l)}),2500);
+})();
 </script><script>
 /* Einheit fest im Zahlenfeld (31.10.2026) */
 (function(){if(window.mxEinheit)return;
