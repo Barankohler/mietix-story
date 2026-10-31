@@ -731,7 +731,7 @@ vorlagenZeigen();
   const desc=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value");
   const st=document.createElement("style");st.textContent=".mxAZ{display:grid;grid-template-columns:minmax(90px,32%) 1fr;gap:10px}.mxAZ>div{min-width:0}.mxAZ input{width:100%;box-sizing:border-box}";document.head.appendChild(st);
   function teile(v,voll){v=String(v||"").trim();let s="",p="",o="";const m=v.match(/^(.*?)[,\s]*(\d{5})\s+(.+)$/);
-    if(m){s=m[1].trim().replace(/,$/,"");p=m[2];o=m[3].trim()}else if(voll)s=v;else o=v;return{s,p,o}}
+    if(m){s=m[1].trim().replace(/,$/,"");p=m[2];o=m[3].trim()}else if(voll&&/\d/.test(v))s=v;else o=v.replace(/^,\s*/,"");return{s,p,o}}   // ohne Hausnummer ist es ein Ort (31.10.2026)
   function setzen(inp){if(inp.dataset.mxA)return;inp.dataset.mxA="1";const voll=inp.dataset.anschrift!=="plzort";
     const lab=inp.previousElementSibling&&inp.previousElementSibling.tagName==="LABEL"?inp.previousElementSibling:null;
     const ic=inp.className,lc=lab?lab.className:"",feld=(t,l,extra)=>lab?'<label class="'+lc+'">'+l+'</label><input class="'+ic+'" data-t="'+t+'" autocomplete="off"'+(extra||"")+'>':'<input class="'+ic+'" data-t="'+t+'" placeholder="'+l+'" autocomplete="off"'+(extra||"")+'>';
