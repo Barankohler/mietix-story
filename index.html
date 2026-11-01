@@ -584,7 +584,7 @@ function vorlagenZeigen(){
     ).join("") + '<div class="vchip neu" id="vneu">+ Auswahl merken</div>';
   el.querySelectorAll(".vchip[data-i]").forEach(c=>{
     c.onclick=e=>{
-      if(e.target.dataset.weg!==undefined){
+      if(e.target.dataset.weg!==undefined){if(!confirm("Diese gespeicherte Auswahl löschen?"))return;   // Rückfrage (1.11.2026)
         const v2=vorlagenLesen(); v2.splice(+e.target.dataset.weg,1);
         vorlagenSchreiben(v2); vorlagenZeigen(); return;
       }
