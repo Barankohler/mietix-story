@@ -623,10 +623,21 @@ vorlagenZeigen();
     box.textContent=String(text||"");const x=document.createElement("i");x.textContent="✕";box.appendChild(x);box.classList.add("an");
     clearTimeout(uhr);if(ms)uhr=setTimeout(()=>box.classList.remove("an"),ms)};
 
+  // Speicher voll: Ausweg ohne Löschen (05.11.2026, D25). Alles Getippte dieser Seite lässt sich kopieren und auf einem anderen Gerät weitermachen, gelöscht wird nichts
+  function getippt(){const z=[];document.querySelectorAll("input,textarea,select").forEach(e=>{if(e.disabled||e.type==="password"||e.type==="hidden"||e.type==="file"||e.type==="button"||e.type==="submit"||!e.offsetParent)return;
+      if((e.type==="checkbox"||e.type==="radio")&&!e.checked)return;const w=e.tagName==="SELECT"?(e.options[e.selectedIndex]||{}).text:e.value;if(!w||!String(w).trim())return;
+      const l=(e.id&&document.querySelector('label[for="'+e.id+'"]'))||e.closest("label")||(e.previousElementSibling&&e.previousElementSibling.tagName==="LABEL"?e.previousElementSibling:null);z.push(((l&&l.textContent.trim())||e.placeholder||e.id||"Feld")+": "+String(w).trim())});
+    return document.title+", "+new Date().toLocaleString("de-DE")+"\n"+z.join("\n")}
+  async function kopieren(t){try{await navigator.clipboard.writeText(t);return true}catch(e){const a=document.createElement("textarea");a.value=t;a.style.cssText="position:fixed;opacity:0";document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand("copy")}catch(x){}a.remove();return ok}}
+  window.mxVoll=function(){mxFehler("Nicht gespeichert: Der Speicher auf diesem Gerät ist voll. Nichts wird gelöscht. Seite offen lassen, das Getippte kopieren und auf einem anderen Gerät weitermachen.");
+    const b=box;if(!b||b.querySelector("#mxKopier"))return;const k=document.createElement("button");k.id="mxKopier";k.type="button";k.textContent="Getipptes kopieren";
+    k.style.cssText="display:block;width:auto;min-height:40px;margin:10px 0 0;padding:8px 14px;border:0;border-radius:10px;background:#fff;color:#C4161C;font:700 15px -apple-system,system-ui,sans-serif;cursor:pointer";
+    k.onclick=async e=>{e.stopPropagation();const ok=await kopieren(getippt());k.textContent=ok?"✓ Kopiert, jetzt auf dem anderen Gerät einfügen":"Kopieren ging nicht, bitte abschreiben"};b.appendChild(k)};
+
   // Speichern auf dem Gerät scheitert: jede Seite meldet es rot, auch wenn sie den Fehler selbst verschluckt
   try{const orig=Storage.prototype.setItem;
     Storage.prototype.setItem=function(k,v){try{return orig.call(this,k,v)}catch(e){
-      mxFehler("Nicht gespeichert: Der Speicher auf diesem Gerät ist voll oder gesperrt. Seite offen lassen, sonst geht das Getippte verloren.");throw e}}}catch(e){}
+      mxVoll();throw e}}}catch(e){}
 
   // Preise nicht geladen (nur Seiten, die Preise brauchen)
   if(document.documentElement.innerHTML.indexOf("mietix-preise/preise.json")>=0)setTimeout(()=>{
