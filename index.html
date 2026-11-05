@@ -204,6 +204,7 @@ function nameStil(c,gr){
 function schrift(c,gr,st){c.font=(st||800)+" "+gr+"px -apple-system,Helvetica,Arial,sans-serif";}
 
 function zeichne(){
+  if(!$("von").value||!$("bis").value)return;   // ohne Zeitraum kein Bild, siehe auffrischen (05.11.2026)
   const cv=$("vorschau"), c=cv.getContext("2d");
   const B=1080,H=1920;
   const angebot=MODUS==="angebot";
@@ -446,6 +447,7 @@ function zeichne(){
 /* ---------- Bedienung ---------- */
 function auffrischen(){
   const von=$("von").value,bis=$("bis").value;
+  if(!von||!bis){$("zeitraumtext").textContent="";$("warn").textContent="Bitte Zeitraum wählen.";$("warn").style.display="";$("liste").innerHTML="";return}   // kein „NaN €“ (05.11.2026)
   if(tage(von,bis)<1){$("bis").value=nachISO(plusTage(ausISO(von),1));}
   $("bis").min=nachISO(plusTage(ausISO($("von").value),1));
   const v=ausISO($("von").value),b=ausISO($("bis").value),d=tage($("von").value,$("bis").value);
@@ -732,10 +734,12 @@ vorlagenZeigen();
     ".mxStart,.abgl a,.abgl-link,#ablNeuZugang,#ablPwNeu,#ablAus,.sZur,.buZurueck,#bZurueck,#sAlle,#mLoesch,#vOrtAendern,#mVerlBez,#mKautWeg,#mEndWeg,#mEndBez,.kurz>a,a.zu,.buVerw,.zurueckA,#kZu,a.loeschen,.aend,.n a.pdf,#entwurfLeeren,#entwurfZurueck,#weiterSpaeter,.mini,.mehr>span,.mehr>a,.unten>a,.pbTipp a[data-pb],#mVerlInfo .vz>a,#uKopf>a,.mxKlein>summary{background:#E9E9EE!important;border:0!important;border-radius:10px!important;padding:6px 12px!important;text-decoration:none!important;display:inline-flex!important;align-items:center;gap:3px;line-height:1.25!important;width:auto!important;max-width:100%;box-shadow:none!important;cursor:pointer;-webkit-tap-highlight-color:transparent}"+
     ".buVerw,.sZur,.buZurueck,#uKopf>a{display:flex!important;width:max-content!important}.buVerw{margin-left:auto!important;margin-right:auto!important}"+
     ".mxStart{color:#C4161C!important;font-size:16px!important;font-weight:700!important;letter-spacing:0!important;padding:6px 12px 6px 9px!important}.mxStart b{margin-top:-1px;font-size:18px!important}"+
+    /* ‹ Start überall gleich groß (05.11.2026), auch wo look.py nicht gilt */
+    "html body header .mxStart,html body .topbar .mxStart{float:none!important;margin:0 10px 0 0!important;border:0!important;padding:5px 12px 5px 9px!important;background:#E9E9EE!important;border-radius:10px!important;color:#C4161C!important;opacity:1!important;font-size:16px!important;font-weight:600!important;gap:3px!important;line-height:1.2!important;min-height:44px!important;box-sizing:border-box;display:inline-flex!important;align-items:center!important}html body .mxStart b{font-size:20px!important;font-weight:400!important;line-height:16px!important;margin-top:-2px!important}"+
     /* PC und Mac (1.11.2026, Baran: auf allen Geräten gleich): Kopfzeile und Inhalt in einer 680-px-Spalte in der Mitte.
        Muss ganz am Ende stehen: header{padding-left:16px!important} weiter oben (und look.py davor im head) würde sonst gewinnen */
     (istStart||art==="kalender"||art==="schaeden"?"":"@media(min-width:760px){header,.topbar{padding-left:max(16px,calc((100% - 680px)/2))!important;padding-right:max(16px,calc((100% - 680px)/2))!important}"+
-      "main{max-width:680px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box}header .plus{right:max(16px,calc((100% - 680px)/2))!important}}");
+      "main{max-width:680px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box;padding-left:16px!important;padding-right:16px!important}header .plus{right:max(16px,calc((100% - 680px)/2))!important}}");
   document.head.appendChild(st);
 
   // ‹ Start und Symbol in der Kopfzeile
@@ -762,15 +766,25 @@ vorlagenZeigen();
       if(history.length>1&&document.referrer.indexOf(location.origin)===0)history.back();else location.href="https://barankohler.github.io/mietix-zentrale/"},{passive:true})}
 
   // Neue Version: die Seite aus dem Netz mit der geladenen vergleichen (ohne Daten, nur der Text der Seite)
+  // Seit 05.11.2026: nur die Kopfzeile abfragen (Stand der Seite im Netz gegen Stand der geladenen Seite), nicht jedes Mal die ganze Seite. Kennt der Server keinen Stand, wie bisher über den Text.
   let alt=null;
-  async function pruefen(){try{const r=await fetch(location.pathname,{cache:"no-store"});if(!r.ok)return;const t=await r.text(),h=t.length+":"+t.slice(-400);
-    if(alt===null){const c=await fetch(location.pathname,{cache:"force-cache"}).then(x=>x.text()).catch(()=>null);alt=c?c.length+":"+c.slice(-400):h}
-    if(h!==alt){let b=document.getElementById("mxNeu");if(!b){b=document.createElement("div");b.id="mxNeu";b.innerHTML="Neue Version da. <b>Tippen zum Aktualisieren</b>";b.onclick=()=>location.reload();
+  async function pruefen(){try{let neu=false;const k=await fetch(location.pathname,{method:"HEAD",cache:"no-store"}).catch(()=>null);
+    const lm=k&&k.ok?k.headers.get("last-modified"):null,tN=lm?Date.parse(lm):NaN,tD=Date.parse(document.lastModified);
+    if(!isNaN(tN)&&!isNaN(tD))neu=tN>tD+1000;
+    else{const r=await fetch(location.pathname,{cache:"no-store"});if(!r.ok)return;const t=await r.text(),h=t.length+":"+t.slice(-400);
+      if(alt===null){const c=await fetch(location.pathname,{cache:"force-cache"}).then(x=>x.text()).catch(()=>null);alt=c?c.length+":"+c.slice(-400):h}
+      neu=h!==alt}
+    if(neu){let b=document.getElementById("mxNeu");if(!b){b=document.createElement("div");b.id="mxNeu";b.innerHTML="Neue Version da. <b>Tippen zum Aktualisieren</b>";b.onclick=()=>location.reload();
       const kopf=document.querySelector("header,.topbar");if(kopf)kopf.after(b);else document.body.prepend(b)}b.classList.add("an")}}catch(e){}}
   setTimeout(pruefen,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pruefen()});
 
   // Ohne Internet: Seite aus dem Speicher (sw.js liegt im Ordner der Seite)
   if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+
+  // Startseite: wichtige Seiten einmal in den Speicher, damit sie auch ohne Internet aufgehen, selbst wenn sie auf diesem Gerät noch nie offen waren (05.11.2026)
+  if(istStart&&"serviceWorker" in navigator&&"caches" in window&&location.protocol==="https:"&&location.hostname==="barankohler.github.io")setTimeout(async()=>{try{if(!navigator.onLine)return;const c=await caches.open("mietix-seiten-1");
+    for(const p of ["mietix-vertrag/","mietix-anfragen/","mietix-belegung/","mietix-belegung/angebot.html","mietix-autos/","mietix-geld/","mietix-zentrale/kunden.html","mietix-zentrale/nachrichten.html","mietix-zentrale/umsatzbringer.html"]){const u=location.origin+"/"+p;
+      try{if(!await c.match(u))await c.add(u);const o=p.split("/")[0]+"/";if(o!=="mietix-zentrale/")await navigator.serviceWorker.register("/"+o+"sw.js",{scope:"/"+o})}catch(e){}}}catch(e){}},6000);
 
   // Startseite: die meistgenutzten Seiten schon vorladen, dann öffnen sie ohne Wartezeit
   if(istStart)setTimeout(()=>["mietix-vertrag/","mietix-anfragen/","mietix-belegung/","mietix-autos/"].forEach(p=>{const l=document.createElement("link");l.rel="prefetch";l.href="https://barankohler.github.io/"+p;document.head.appendChild(l)}),2500);
